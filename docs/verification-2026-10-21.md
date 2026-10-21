@@ -3,9 +3,10 @@
 ## 已執行
 
 - Linux Docker／Node.js 24：乾淨 npm ci、ESLint、型別檢查、5 項行為測試與正式 Webpack／standalone 建置通過。
-- 翻譯字典：227 個訊息鍵，兩語鍵與 ICU 參數一致；參數化介面呼叫受 TypeScript 檢查。
+- 翻譯字典：236 個訊息鍵，兩語鍵與 ICU 參數一致；參數化介面呼叫受 TypeScript 檢查。本機新增語言搜尋測試後共 6 項行為測試通過。
 - Playwright：9 個情境 × 5 種設定，共 45 項通過。設定為 Chromium、Firefox、WebKit，以及手機 Chrome／Safari 尺寸模擬。
-- 地球按鈕語言清單：Enter／Space、Tab／Shift+Tab、Escape、外部點擊、焦點離開、目前語言選擇與 query／hash 保留均通過。驗證 375／768／1024／1440px 的清單邊界、長名稱與增加項目後的垂直捲動；375／1440px 截圖已檢查。Safari 指標開啟按鈕時明確設定焦點。
+- 語言搜尋對話框：中文／英文名稱、別名、全半形及代碼搜尋、無結果清除、Enter／Space、Tab／Shift+Tab、Escape、關閉按鈕、外部點擊、目前語言選擇與 query／hash 保留均通過；背景內容不能取得焦點，關閉後回復按鈕與背景捲動。原生對話框保留切至瀏覽器工具列的鍵盤行為。
+- 語言列表驗證 375／768／1024／1440px 的單欄／雙欄、長名稱與增加項目後的結果區垂直捲動，另檢查 375×420px 的較矮視窗。375／1440px 繁中與英文截圖已檢查；Safari 外部點擊關閉採 closedBy 能力檢測與座標 fallback。
 - 驗證雙語 HTML、舊址 308 與 query 保留、未知語言／工具 404、canonical、hreflang、JSON-LD、14 個 sitemap 網址與 robots。
 - 驗證中英文搜尋、無結果復原、語言切換保留查詢、文字、設定、圖片、覆寫、結果、錯誤與瀏覽器返回行為。
 - 圖片單張下載檢查 JPG magic bytes；ZIP 解包檢查同名檔案不互相覆蓋；設定修改後過期結果不能下載。處理期間未觀察到上傳請求。

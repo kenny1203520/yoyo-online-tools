@@ -6,6 +6,19 @@ import { searchTools, tools } from "../../src/lib/tools";
 import { getSiteConfig } from "../../src/lib/site-config";
 import { sitemapEntries, pageMetadata, structuredData } from "../../src/lib/seo";
 import { ProcessingError, processingIssue } from "../../src/lib/processing-error";
+import { localeDefinitions, searchLocales } from "../../src/lib/i18n";
+
+test("language search covers native names, aliases, English names and normalized codes", () => {
+  for (const query of ["中文", "繁中", "正體中文", "Traditional Chinese", "ｔＲＡＤＩＴＩＯＮＡＬ　ＣＨＩＮＥＳＥ", "zh_TW", " zh-tw "]) {
+    assert.deepEqual(searchLocales(query).map(({ code }) => code), ["zh-TW"], query);
+  }
+  for (const query of ["English", "英文", "英語", "ｅＮ"]) {
+    assert.deepEqual(searchLocales(query).map(({ code }) => code), ["en"], query);
+  }
+  assert.deepEqual(searchLocales("   "), [...localeDefinitions]);
+  assert.deepEqual(searchLocales("not-a-language"), []);
+  assert.deepEqual(searchLocales("繁中 English"), []);
+});
 
 test("both dictionaries have identical keys and ICU parameters", () => {
   assert.deepEqual(Object.keys(messages.en).sort(), Object.keys(messages["zh-TW"]).sort());
