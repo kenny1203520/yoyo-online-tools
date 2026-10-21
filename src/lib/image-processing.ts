@@ -1,3 +1,5 @@
+import { ProcessingError } from "./processing-error";
+import type { MessageRef } from "./messages";
 export type OutputFormat = "same" | "image/jpeg" | "image/png" | "image/webp";
 
 export type ImageSettings = {
@@ -25,7 +27,7 @@ export type ImageEntry = {
   height: number;
   overrides: Partial<ImageSettings>;
   status: "ready" | "queued" | "processing" | "done" | "error";
-  error?: string;
+  error?: MessageRef;
   result?: ImageResult;
 };
 
@@ -64,25 +66,25 @@ function isAnimated(data: Uint8Array, mime: ImageEntry["mime"]) {
 }
 
 export async function inspectImage(file: File): Promise<{ mime: ImageEntry["mime"]; width: number; height: number }> {
-  if (file.size > MAX_FILE_BYTES) throw new Error("單張圖片超過 20 MB。請先縮小圖片，再試一次。");
-  if (!file.size) throw new Error("這個檔案是空的，請選擇其他圖片。");
+  if (file.size > MAX_FILE_BYTES) throw new ProcessingError("imageTooLarge");
+  if (!file.size) throw new ProcessingError("emptyImage");
 
   const header = new Uint8Array(await file.slice(0, 512 * 1024).arrayBuffer());
   const mime = sniffImage(header);
-  if (!mime) throw new Error("目前支援靜態 JPG、PNG 和 WebP。這個檔案格式無法使用。");
-  if (isAnimated(header, mime)) throw new Error("目前只支援靜態圖片。請轉成單張圖片後再試一次。");
+  if (!mime) throw new ProcessingError("unsupportedImage");
+  if (isAnimated(header, mime)) throw new ProcessingError("animatedImage");
 
   let bitmap: ImageBitmap | undefined;
   try {
     bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
     const width = bitmap.width;
     const height = bitmap.height;
-    if (!width || !height) throw new Error("讀取不到圖片尺寸，請選擇其他圖片。");
-    if (width * height > MAX_PIXELS) throw new Error("圖片超過 2,400 萬像素。請先縮小圖片，再試一次。");
+    if (!width || !height) throw new ProcessingError("invalidDimensions");
+    if (width * height > MAX_PIXELS) throw new ProcessingError("tooManyPixels");
     return { mime, width, height };
   } catch (error) {
-    if (error instanceof Error && error.message.startsWith("圖片超過")) throw error;
-    throw new Error("無法讀取這張圖片。請確認檔案完整後再試一次。");
+    if (error instanceof ProcessingError) throw error;
+    throw new ProcessingError("decodeImageFailed");
   } finally {
     bitmap?.close();
   }
@@ -112,7 +114,7 @@ export async function supportsOutputFormat(mime: ImageEntry["mime"]) {
 
 export async function processImage(entry: ImageEntry, settings: ImageSettings): Promise<ImageResult> {
   const targetMime = actualOutputFormat(settings, entry.mime);
-  if (!(await supportsOutputFormat(targetMime))) throw new Error(`${formatLabel(targetMime)} 輸出不受目前瀏覽器支援。請換一種格式，或改用其他瀏覽器。`);
+  if (!(await supportsOutputFormat(targetMime))) throw new ProcessingError("unsupportedOutput", { format: formatLabel(targetMime) });
 
   let bitmap: ImageBitmap | undefined;
   try {
@@ -128,7 +130,7 @@ export async function processImage(entry: ImageEntry, settings: ImageSettings): 
     canvas.width = width;
     canvas.height = height;
     const context = canvas.getContext("2d", { alpha: targetMime !== "image/jpeg" });
-    if (!context) throw new Error("瀏覽器暫時無法處理圖片。請關閉其他分頁後再試一次。");
+    if (!context) throw new ProcessingError("canvasUnavailable");
     if (targetMime === "image/jpeg") {
       context.fillStyle = "#ffffff";
       context.fillRect(0, 0, width, height);
@@ -137,12 +139,12 @@ export async function processImage(entry: ImageEntry, settings: ImageSettings): 
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, targetMime, targetMime === "image/png" ? undefined : settings.quality));
     canvas.width = 0;
     canvas.height = 0;
-    if (!blob) throw new Error("圖片輸出失敗。請降低圖片尺寸後重試。");
-    if (blob.type !== targetMime) throw new Error(`${formatLabel(targetMime)} 輸出不受目前瀏覽器支援。請換一種格式，或改用其他瀏覽器。`);
+    if (!blob) throw new ProcessingError("exportFailed");
+    if (blob.type !== targetMime) throw new ProcessingError("unsupportedOutput", { format: formatLabel(targetMime) });
     return { blob, mime: blob.type, width, height, size: blob.size, settingsKey: settingsKey(settings, entry.mime) };
   } catch (error) {
-    if (error instanceof Error) throw error;
-    throw new Error("圖片處理失敗。請再試一次。");
+    if (error instanceof ProcessingError) throw error;
+    throw new ProcessingError("processingFailed");
   } finally {
     bitmap?.close();
   }
@@ -152,13 +154,14 @@ export function formatLabel(mime: string) {
   if (mime === "image/jpeg") return "JPG";
   if (mime === "image/png") return "PNG";
   if (mime === "image/webp") return "WebP";
-  return "圖片";
+  return "Image";
 }
 
-export function formatBytes(value: number) {
-  if (value < 1024) return `${value} B`;
-  if (value < 1024 * 1024) return `${(value / 1024).toFixed(0)} KB`;
-  return `${(value / (1024 * 1024)).toFixed(2)} MB`;
+export function formatBytes(value: number, locale = "zh-TW") {
+  const unit = value < 1024 ? "B" : value < 1024 * 1024 ? "KB" : "MB";
+  const amount = unit === "B" ? value : unit === "KB" ? value / 1024 : value / (1024 * 1024);
+  const digits = unit === "MB" ? 2 : 0;
+  return `${new Intl.NumberFormat(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(amount)} ${unit}`;
 }
 
 export function safeFileName(value: string) {
