@@ -1,0 +1,17 @@
+node_modules
+.next
+.git
+.github
+.agents
+.codex
+.aws
+.env
+.env.*
+!.env.example
+*.log
+*.tsbuildinfo
+coverage
+test-results
+playwright-report
+notes
+docs

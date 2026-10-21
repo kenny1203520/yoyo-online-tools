@@ -1,0 +1,10 @@
+services:
+  web:
+    image: ${YOYO_IMAGE:-ghcr.io/kenny1203520/yoyo-online-tools:latest}
+    restart: unless-stopped
+    ports:
+      - "${YOYO_PORT:-3000}:3000"
+    env_file: .env
+    init: true
+    security_opt:
+      - no-new-privileges:true
