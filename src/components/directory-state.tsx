@@ -10,4 +10,3 @@ export function useDirectoryState() {
   if (!state) throw new Error("Missing directory provider");
   return state;
 }
-
