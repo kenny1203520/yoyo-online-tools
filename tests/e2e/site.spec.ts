@@ -4,7 +4,7 @@ import JSZip from "jszip";
 
 async function switchLanguage(page: Page, name: "English" | "繁體中文") {
   await page.getByRole("button", { name: /^(切換語言|Change language)/ }).click();
-  await page.getByRole("link", { name, exact: true }).click();
+  await page.getByRole("dialog").getByRole("link", { name: new RegExp(`^${name}`) }).click();
 }
 
 test("localized HTML, canonical and genuine missing-page status", async ({ request }) => {
@@ -145,41 +145,75 @@ test("keyboard users can skip navigation and find a tool", async ({ page }) => {
   await expect(page.locator(".tool-card")).toHaveCount(1);
 });
 
-test("language disclosure supports keyboard, dismissal and URL preservation", async ({ page }) => {
+test("language dialog supports multilingual search, keyboard, dismissal and URL preservation", async ({ page }) => {
   await page.goto("/zh-TW?source=language-test#guide");
   const trigger = page.getByRole("button", { name: "切換語言，目前語言：繁體中文", exact: true });
-  const panel = page.locator(".language-panel");
+  const panel = page.getByRole("dialog", { name: "選擇語言", exact: true });
   await expect(trigger).toHaveAttribute("aria-expanded", "false");
   await expect(panel).toBeHidden();
+  await expect(trigger).toBeEnabled();
   await trigger.focus();
   await trigger.press("Enter");
   await expect(trigger).toHaveAttribute("aria-expanded", "true");
-  await expect(page.getByRole("link", { name: "繁體中文", exact: true })).toHaveAttribute("aria-current", "true");
-  const english = page.getByRole("link", { name: "English", exact: true });
+  const search = panel.getByRole("searchbox", { name: "搜尋語言", exact: true });
+  await expect(search).toBeFocused();
+  await expect(page.getByRole("link", { name: /^繁體中文/ })).toHaveAttribute("aria-current", "true");
+  const english = panel.getByRole("link", { name: /^English/ });
   await expect(english).toHaveAttribute("href", "/en?source=language-test#guide");
-  await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: "繁體中文", exact: true })).toBeFocused();
+  expect(await page.evaluate(() => document.documentElement.style.overflow)).toBe("hidden");
   await page.keyboard.press("Shift+Tab");
-  await expect(trigger).toBeFocused();
+  await expect(panel.getByRole("button", { name: "關閉語言選擇" })).toBeFocused();
   await page.keyboard.press("Tab");
+  await expect(search).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(panel.getByRole("link", { name: /^繁體中文/ })).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(english).toBeFocused();
+  // Native modals can yield to browser chrome; background page controls stay inert.
+  for (let index = 0; index < 6; index++) {
+    await page.keyboard.press("Tab");
+    expect(await page.evaluate(() => document.activeElement === document.body || document.querySelector("dialog")!.contains(document.activeElement))).toBe(true);
+  }
+  await search.focus();
+  for (const query of ["Traditional", "zh_TW", "正體中文"]) {
+    await search.fill(query);
+    await expect(panel.getByRole("link")).toHaveCount(1);
+    await expect(panel.getByRole("link")).toContainText("繁體中文");
+  }
+  for (const query of ["英文", "ｅＮ"]) {
+    await search.fill(query);
+    await expect(panel.getByRole("link")).toHaveCount(1);
+    await expect(english).toBeVisible();
+  }
+  await search.fill("nothing-matches");
+  await expect(panel.getByRole("link")).toHaveCount(0);
+  await expect(panel.getByRole("heading", { name: "找不到符合的語言" })).toBeVisible();
+  await panel.locator(".language-no-results button").click();
+  await expect(search).toHaveValue("");
+  await expect(search).toBeFocused();
+  await expect(panel.getByRole("link")).toHaveCount(2);
   await page.keyboard.press("Escape");
   await expect(panel).toBeHidden();
   await expect(trigger).toBeFocused();
+  await expect.poll(() => page.evaluate(() => document.documentElement.style.overflow)).toBe("");
   await trigger.press("Space");
   await expect(panel).toBeVisible();
-  await page.getByRole("link", { name: "繁體中文", exact: true }).click();
+  await page.getByRole("link", { name: /^繁體中文/ }).click();
   await expect(panel).toBeHidden();
   await expect(trigger).toBeFocused();
   await expect(page).toHaveURL(/\/zh-TW\?source=language-test#guide$/);
   await trigger.click();
-  await page.locator(".language-panel a").last().focus();
-  await page.keyboard.press("Tab");
+  await panel.getByRole("heading", { name: "選擇語言" }).click();
+  await expect(panel).toBeVisible();
+  await search.fill("English");
+  await panel.getByRole("button", { name: "關閉語言選擇" }).click();
   await expect(panel).toBeHidden();
+  await expect(trigger).toBeFocused();
   await trigger.click();
-  await page.locator(".site-header").click({ position: { x: 2, y: 2 } });
+  await expect(search).toHaveValue("");
+  await page.mouse.click(2, 2);
   await expect(panel).toBeHidden();
+  await expect(trigger).toBeFocused();
   await switchLanguage(page, "English");
   await expect(page).toHaveURL(/\/en\?source=language-test#guide$/);
   await expect(page.getByRole("button", { name: "Change language, current language: English", exact: true })).toHaveAttribute("aria-expanded", "false");
@@ -191,28 +225,43 @@ test("language list fits every viewport and accommodates future language names",
     await page.goto("/en");
     const trigger = page.getByRole("button", { name: /^Change language/ });
     await trigger.click();
-    const panel = page.locator(".language-panel");
+    const panel = page.getByRole("dialog", { name: "Choose a language", exact: true });
     const buttonBounds = await trigger.boundingBox();
     expect(buttonBounds!.width).toBeGreaterThanOrEqual(44);
     expect(buttonBounds!.height).toBeGreaterThanOrEqual(44);
     const bounds = await panel.boundingBox();
     expect(bounds!.x).toBeGreaterThanOrEqual(0);
     expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width);
+    const cards = panel.locator("li");
+    const first = await cards.nth(0).boundingBox();
+    const second = await cards.nth(1).boundingBox();
+    if (width === 375) expect(second!.y).toBeGreaterThan(first!.y);
+    else expect(second!.y).toBe(first!.y);
     if (testInfo.project.name === "chromium" && [375, 1440].includes(width)) {
-      await page.screenshot({ path: `test-results/language-switcher-${width}.png` });
+      await page.screenshot({ path: `test-results/language-picker-${width}.png` });
     }
     // Exercise layout capacity without exposing unimplemented languages in the app.
     await panel.locator("ul").evaluate((list) => {
       for (let index = 0; index < 12; index++) {
         const row = list.firstElementChild!.cloneNode(true) as HTMLElement;
-        row.querySelector("span")!.textContent = "A future language with a much longer native name";
+        row.querySelector(".language-native-name")!.textContent = "A future language with a much longer native name";
         list.appendChild(row);
       }
     });
-    expect(await panel.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
-    expect(await panel.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+    const results = panel.locator(".language-results");
+    expect(await results.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
+    expect(await results.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await page.keyboard.press("Escape");
     await expect(panel).toBeHidden();
   }
+  await page.setViewportSize({ width: 375, height: 420 });
+  await page.goto("/en");
+  await page.getByRole("button", { name: /^Change language/ }).click();
+  const panel = page.getByRole("dialog", { name: "Choose a language", exact: true });
+  expect((await panel.boundingBox())!.height).toBeLessThanOrEqual(388);
+  await expect(panel.getByRole("searchbox")).toBeVisible();
+  await expect(panel.getByRole("button", { name: "Close language selection" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect.poll(() => page.evaluate(() => document.documentElement.style.overflow)).toBe("");
 });

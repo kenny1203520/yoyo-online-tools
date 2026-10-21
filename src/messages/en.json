@@ -224,6 +224,15 @@
   "howItWorks": "How it works",
   "language": "Language",
   "changeLanguage": "Change language, current language: {language}",
+  "chooseLanguage": "Choose a language",
+  "languagePickerDescription": "Use the language you prefer. Your work stays with you.",
+  "closeLanguagePicker": "Close language selection",
+  "searchLanguages": "Search languages",
+  "searchLanguagesPlaceholder": "Search by name or code, e.g. English or zh-TW",
+  "clearLanguageSearch": "Clear language search",
+  "languageResultCount": "{count, plural, one {# language} other {# languages}}",
+  "noLanguagesFound": "No matching languages",
+  "tryLanguageSearchAgain": "Try another language name or code, or clear your search.",
   "batchSummary": "Up to {count, number} images · {size} each",
   "maxImages": "Up to {count, number} images"
 }

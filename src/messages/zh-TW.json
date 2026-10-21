@@ -224,6 +224,15 @@
   "howItWorks": "使用說明",
   "language": "語言",
   "changeLanguage": "切換語言，目前語言：{language}",
+  "chooseLanguage": "選擇語言",
+  "languagePickerDescription": "選擇你習慣的語言，工作內容會保留。",
+  "closeLanguagePicker": "關閉語言選擇",
+  "searchLanguages": "搜尋語言",
+  "searchLanguagesPlaceholder": "搜尋名稱或代碼，例如中文、English、zh-TW",
+  "clearLanguageSearch": "清除語言搜尋",
+  "languageResultCount": "{count, plural, one {# 種語言} other {# 種語言}}",
+  "noLanguagesFound": "找不到符合的語言",
+  "tryLanguageSearchAgain": "試試其他語言名稱或代碼，或清除搜尋條件。",
   "batchSummary": "每批最多 {count} 張・每張 {size}",
   "maxImages": "最多 {count} 張"
 }
