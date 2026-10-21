@@ -113,7 +113,7 @@ function normalizeSearch(value: string) {
     .normalize("NFKC")
     .toLocaleLowerCase("zh-TW")
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    .replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim();
 }
 
 function searchTokens(value: string) {
@@ -152,4 +152,20 @@ export function matchesTool(tool: Tool, query: string) {
   if (searchableText.includes(normalizedQuery)) return true;
   const tokens = searchTokens(query);
   return tokens.length > 0 && tokens.every((token) => tokenMatchesCorpus(token, searchableText));
+}
+
+export function searchTools(query: string, category: "all" | Tool["category"] = "all") {
+  const normalized = normalizeSearch(query);
+  const score = (tool: Tool) => {
+    if (!normalized) return 0;
+    const names = [...Object.values(tool.name), ...Object.values(tool.shortName)].map(normalizeSearch);
+    if (names.includes(normalized)) return 100;
+    if (names.some((name) => name.includes(normalized))) return 80;
+    const aliases = Object.values(tool.searchTerms).flat().map(normalizeSearch);
+    if (aliases.includes(normalized)) return 60;
+    if (aliases.some((name) => name.includes(normalized))) return 40;
+    return 10;
+  };
+  return tools.filter((tool) => (category === "all" || tool.category === category) && matchesTool(tool, query))
+    .sort((a, b) => score(b) - score(a));
 }
