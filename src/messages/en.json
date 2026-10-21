@@ -223,6 +223,7 @@
   "primaryNav": "Primary",
   "howItWorks": "How it works",
   "language": "Language",
+  "changeLanguage": "Change language, current language: {language}",
   "batchSummary": "Up to {count, number} images · {size} each",
   "maxImages": "Up to {count, number} images"
 }

@@ -4,6 +4,7 @@ export const messages = { "zh-TW": zh, en: en satisfies Record<keyof typeof zh, 
 export type MessageKey = keyof typeof zh;
 export type MessageRef = { key: MessageKey; values?: Record<string, string | number> };
 export type MessageParameters = {
+  changeLanguage: { language: string };
   batchLimit: { count: number }; addedImages: { count: number }; zipReady: { count: number };
   completedImages: { count: number }; customFields: { count: number }; downloadCompleted: { count: number };
   duplicateCount: { count: number }; maxImages: { count: number };

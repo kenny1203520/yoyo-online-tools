@@ -1,6 +1,11 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import JSZip from "jszip";
+
+async function switchLanguage(page: Page, name: "English" | "繁體中文") {
+  await page.getByRole("button", { name: /^(切換語言|Change language)/ }).click();
+  await page.getByRole("link", { name, exact: true }).click();
+}
 
 test("localized HTML, canonical and genuine missing-page status", async ({ request }) => {
   const legacy = await request.get("/tools/word-count?example=1", { maxRedirects: 0 });
@@ -25,7 +30,7 @@ test("search works across languages and survives locale changes", async ({ page 
   await page.goto("/zh-TW");
   await page.getByRole("searchbox").fill("compress image");
   await expect(page.locator(".tool-card")).toHaveCount(1);
-  await page.getByRole("link", { name: "English", exact: true }).click();
+  await switchLanguage(page, "English");
   await expect(page.getByRole("searchbox")).toHaveValue("compress image");
   await expect(page.locator(".tool-card strong")).toHaveText("Image Compressor");
   await page.getByRole("searchbox").fill("照片太大");
@@ -40,7 +45,7 @@ test("text, settings, results, errors and history survive locale navigation", as
   await page.goto("/zh-TW/tools/text-cleanup");
   await page.locator("#text-source").fill("hello  \n\n\n世界");
   await expect(page.locator("#text-result")).toHaveValue("hello\n\n世界");
-  await page.getByRole("link", { name: "English", exact: true }).click();
+  await switchLanguage(page, "English");
   await expect(page).toHaveTitle(/Clean Up Text/);
   await expect(page.locator("#text-source")).toHaveValue("hello  \n\n\n世界");
   await expect(page.locator("#text-result")).toHaveValue("hello\n\n世界");
@@ -51,7 +56,7 @@ test("text, settings, results, errors and history survive locale navigation", as
   page.once("dialog", (dialog) => dialog.accept());
   await page.locator('input[type="file"]').setInputFiles({ name: "invalid.txt", mimeType: "text/plain", buffer: Buffer.from([0xff,0xff]) });
   await expect(page.locator(".text-workspace-notice")).toContainText("not valid UTF-8");
-  await page.getByRole("link", { name: "繁體中文", exact: true }).click();
+  await switchLanguage(page, "繁體中文");
   await expect(page.locator(".text-workspace-notice")).toContainText("無法以 UTF-8");
   await page.goBack();
   await expect(page.locator("#text-source")).toHaveValue("hello  \n\n\n世界");
@@ -73,7 +78,7 @@ test("images, overrides, results, ZIP and stale-result protection", async ({ pag
     { name: "same.png", mimeType: "image/png", buffer },
   ]);
   await expect(page.locator(".image-list-item")).toHaveCount(2);
-  await page.getByRole("link", { name: "English", exact: true }).click();
+  await switchLanguage(page, "English");
   await expect(page.locator(".image-list-item")).toHaveCount(2);
   for (const width of [375, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
@@ -95,7 +100,7 @@ test("images, overrides, results, ZIP and stale-result protection", async ({ pag
   expect(zipDownload.suggestedFilename()).toBe("yoyo-images.zip");
   const archive = await JSZip.loadAsync(await readFile((await zipDownload.path())!));
   expect(Object.keys(archive.files).sort()).toEqual(["same-yoyo-2.jpg", "same-yoyo.jpg"]);
-  await page.getByRole("link", { name: "繁體中文", exact: true }).click();
+  await switchLanguage(page, "繁體中文");
   await expect(page.locator(".download-single")).toBeVisible();
   await expect(page.locator(".override-panel select")).toHaveValue("image/jpeg");
   await page.locator("#image-format").selectOption("image/webp");
@@ -138,4 +143,76 @@ test("keyboard users can skip navigation and find a tool", async ({ page }) => {
   await page.getByRole("searchbox").focus();
   await page.keyboard.type("word count");
   await expect(page.locator(".tool-card")).toHaveCount(1);
+});
+
+test("language disclosure supports keyboard, dismissal and URL preservation", async ({ page }) => {
+  await page.goto("/zh-TW?source=language-test#guide");
+  const trigger = page.getByRole("button", { name: "切換語言，目前語言：繁體中文", exact: true });
+  const panel = page.locator(".language-panel");
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await expect(panel).toBeHidden();
+  await trigger.focus();
+  await trigger.press("Enter");
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  await expect(page.getByRole("link", { name: "繁體中文", exact: true })).toHaveAttribute("aria-current", "true");
+  const english = page.getByRole("link", { name: "English", exact: true });
+  await expect(english).toHaveAttribute("href", "/en?source=language-test#guide");
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("link", { name: "繁體中文", exact: true })).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(trigger).toBeFocused();
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Tab");
+  await expect(english).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(panel).toBeHidden();
+  await expect(trigger).toBeFocused();
+  await trigger.press("Space");
+  await expect(panel).toBeVisible();
+  await page.getByRole("link", { name: "繁體中文", exact: true }).click();
+  await expect(panel).toBeHidden();
+  await expect(trigger).toBeFocused();
+  await expect(page).toHaveURL(/\/zh-TW\?source=language-test#guide$/);
+  await trigger.click();
+  await page.locator(".language-panel a").last().focus();
+  await page.keyboard.press("Tab");
+  await expect(panel).toBeHidden();
+  await trigger.click();
+  await page.locator(".site-header").click({ position: { x: 2, y: 2 } });
+  await expect(panel).toBeHidden();
+  await switchLanguage(page, "English");
+  await expect(page).toHaveURL(/\/en\?source=language-test#guide$/);
+  await expect(page.getByRole("button", { name: "Change language, current language: English", exact: true })).toHaveAttribute("aria-expanded", "false");
+});
+
+test("language list fits every viewport and accommodates future language names", async ({ page }, testInfo) => {
+  for (const width of [375, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/en");
+    const trigger = page.getByRole("button", { name: /^Change language/ });
+    await trigger.click();
+    const panel = page.locator(".language-panel");
+    const buttonBounds = await trigger.boundingBox();
+    expect(buttonBounds!.width).toBeGreaterThanOrEqual(44);
+    expect(buttonBounds!.height).toBeGreaterThanOrEqual(44);
+    const bounds = await panel.boundingBox();
+    expect(bounds!.x).toBeGreaterThanOrEqual(0);
+    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width);
+    if (testInfo.project.name === "chromium" && [375, 1440].includes(width)) {
+      await page.screenshot({ path: `test-results/language-switcher-${width}.png` });
+    }
+    // Exercise layout capacity without exposing unimplemented languages in the app.
+    await panel.locator("ul").evaluate((list) => {
+      for (let index = 0; index < 12; index++) {
+        const row = list.firstElementChild!.cloneNode(true) as HTMLElement;
+        row.querySelector("span")!.textContent = "A future language with a much longer native name";
+        list.appendChild(row);
+      }
+    });
+    expect(await panel.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
+    expect(await panel.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await page.keyboard.press("Escape");
+    await expect(panel).toBeHidden();
+  }
 });

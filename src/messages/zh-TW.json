@@ -223,6 +223,7 @@
   "primaryNav": "主要導覽",
   "howItWorks": "使用說明",
   "language": "語言",
+  "changeLanguage": "切換語言，目前語言：{language}",
   "batchSummary": "每批最多 {count} 張・每張 {size}",
   "maxImages": "最多 {count} 張"
 }
