@@ -11,7 +11,10 @@ export default defineConfig({
       name: "firefox",
       use: {
         ...devices["Desktop Firefox"],
-        launchOptions: { firefoxUserPrefs: { "webgl.force-enabled": true } },
+        launchOptions: {
+          ...(process.env.CI ? { headless: false } : {}),
+          firefoxUserPrefs: { "webgl.force-enabled": true },
+        },
       },
     },
     { name: "webkit", use: { ...devices["Desktop Safari"] } },
