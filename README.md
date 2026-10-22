@@ -1,6 +1,6 @@
 # YOYO 工具站
 
-提供繁體中文與英文的瀏覽器工具，包含圖片壓縮、尺寸調整、格式轉換、文字清理、移除重複行與字數統計。免登入，圖片與文字只在目前瀏覽器工作階段處理。
+提供繁體中文與英文的瀏覽器工具，包含圖片、文字、工程師日常處理與 3D 空間檢視。免登入，輸入及模型只在目前瀏覽器工作階段處理。
 
 ## 開始使用
 
@@ -26,6 +26,14 @@ npm run dev
 完整繁中／英文介面由 `next-intl` 與具型別檢查的字典管理。兩種介面都能用中英文查詢名稱、用途及同義詞，例如 `compress image` 或「照片太大」。切換語言保留工作區內容、設定、結果與搜尋條件；重新整理或離開工具工作區會釋放內容。舊版無語言網址以 308 轉至繁中。
 
 文字工具：`/{locale}/tools/text-cleanup`、`remove-duplicate-lines`、`word-count`。可貼上內容或匯入 UTF-8 TXT（上限 1 MiB），預覽、複製或下載結果。
+
+## 工程師與 3D 空間工具
+
+工程師工具提供 JSON 格式化／壓縮／驗證、文字與 JSON 差異比較、Base64／Base64url、URL 編解碼、Unix 時間戳轉換及 JavaScript Regex 測試。Regex 在 Worker 執行，支援取消與 2 秒逾時；輸入在瀏覽器本機處理。
+
+`/{locale}/tools/3d-viewer` 可載入本機 GLB、glTF、FBX、IFC 或 ZIP 資產組；ZIP 內有多個模型時可選擇主模型。工作區支援環繞、第一人稱、第三人稱、步行／飛行、鍵盤與觸控移動、單位設定、已知尺寸校準、兩點量距及人體身高參照。IFC 可瀏覽樓層、構件與基本屬性，並選取高亮、隱藏或單獨顯示構件。大模型效能受裝置、WebGL 與模型幾何影響；首版碰撞為簡化估算，無法取代 BIM 專業檢核。
+
+模型及檔案不會上傳或跨工作階段保存。操作細節與已知限制見 [3D 空間工作區](docs/3d-workspace.md)。
 
 ## Docker 部署與 SEO
 
@@ -55,6 +63,7 @@ npm run typecheck # TypeScript
 npm test          # 翻譯、搜尋、設定與 SEO 行為測試
 npm run build     # 建置正式版本
 npm run start     # 啟動正式版本
+node scripts/fetch-model-fixtures.mjs # 下載固定官方 3D 驗收樣本
 npx playwright install chromium firefox webkit
 npm run test:e2e   # 瀏覽器驗收（需先 build）
 ```
@@ -62,3 +71,9 @@ npm run test:e2e   # 瀏覽器驗收（需先 build）
 正式執行 `npm start` 前必須設定 `SITE_URL`；開發模式預設使用 localhost。CI 以 Node.js 24 驗證，生產建置統一使用 Webpack。
 
 產品決策見 [設計規範](docs/product-and-design.md)、[多語言與部署決策](docs/i18n-seo-deployment.md)。後續專業工具依 [文字與工程師工具實作計畫](docs/next-features-plan.md)推進。
+
+## 安裝、離線與驗收
+
+正式版提供 PWA 安裝說明。在線開啟主要工具，等頁尾顯示已可離線後，可在離線重啟後處理新內容；不保存上次輸入或結果。3D／IFC 需連線。版本更新會先提示下載結果，確認後才重新載入。
+
+字體採可縮放的相對單位：正文與表單預設等效 16px、輔助至少 14px，程式碼可調大小。查看 [PWA 說明](docs/pwa.md)、[完成度與驗收證據](docs/completion-audit-2026-10-22.md) 與 [真機／使用者驗收腳本](docs/manual-acceptance.md)。尚未取得的人工及發佈證據不計為完成。

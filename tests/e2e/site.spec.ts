@@ -2,6 +2,29 @@ import { test, expect, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import JSZip from "jszip";
 
+function makeTriangleGlb() {
+  const positions = Buffer.alloc(36);
+  [-1, 0, 0, 1, 0, 0, 0, 1, 0].forEach((value, index) => positions.writeFloatLE(value, index * 4));
+  const json = Buffer.from(JSON.stringify({
+    asset: { version: "2.0" },
+    buffers: [{ byteLength: positions.length }],
+    bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: positions.length }],
+    accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [-1, 0, 0], max: [1, 1, 0] }],
+    meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }],
+    nodes: [{ mesh: 0 }],
+    scenes: [{ nodes: [0] }],
+    scene: 0,
+  }), "utf8");
+  const jsonLength = Math.ceil(json.length / 4) * 4;
+  const binaryLength = Math.ceil(positions.length / 4) * 4;
+  const glb = Buffer.alloc(12 + 8 + jsonLength + 8 + binaryLength);
+  glb.writeUInt32LE(0x46546c67, 0); glb.writeUInt32LE(2, 4); glb.writeUInt32LE(glb.length, 8);
+  glb.writeUInt32LE(jsonLength, 12); glb.writeUInt32LE(0x4e4f534a, 16); glb.fill(0x20, 20, 20 + jsonLength); json.copy(glb, 20);
+  const binaryHeader = 20 + jsonLength;
+  glb.writeUInt32LE(binaryLength, binaryHeader); glb.writeUInt32LE(0x004e4942, binaryHeader + 4); positions.copy(glb, binaryHeader + 8);
+  return glb;
+}
+
 async function switchLanguage(page: Page, name: "English" | "繁體中文") {
   await page.getByRole("button", { name: /^(切換語言|Change language)/ }).click();
   await page.getByRole("dialog").getByRole("link", { name: new RegExp(`^${name}`) }).click();
@@ -38,7 +61,7 @@ test("search works across languages and survives locale changes", async ({ page 
   await page.getByRole("searchbox").fill("nothing-matches-123");
   await expect(page.locator(".empty-search")).toBeVisible();
   await page.locator(".empty-search button").click();
-  await expect(page.locator(".tool-card")).toHaveCount(6);
+  await expect(page.locator(".tool-card")).toHaveCount(13);
 });
 
 test("text, settings, results, errors and history survive locale navigation", async ({ page }) => {
@@ -117,7 +140,7 @@ test("images, overrides, results, ZIP and stale-result protection", async ({ pag
 test("sitemap and robots list localized live tools", async ({ request }) => {
   const sitemap = await request.get("/sitemap.xml");
   const xml = await sitemap.text();
-  expect((xml.match(/<loc>/g) || []).length).toBe(14);
+  expect((xml.match(/<loc>/g) || []).length).toBe(28);
   expect(xml).toContain('hreflang="en"');
   expect(xml).not.toContain("/api/");
   expect(await (await request.get("/robots.txt")).text()).toContain("https://tools.example.test/sitemap.xml");
@@ -264,4 +287,18 @@ test("language list fits every viewport and accommodates future language names",
   await expect(panel.getByRole("button", { name: "Close language selection" })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect.poll(() => page.evaluate(() => document.documentElement.style.overflow)).toBe("");
+});
+
+test("developer workspace formats JSON and 3D workspace exposes local model controls", async ({ page }) => {
+  await page.goto("/zh-TW/tools/json-formatter");
+  await page.locator(".cm-content").fill('{"name":"YOYO","active":true}');
+  await page.getByRole("button", { name: "執行" }).click();
+  await expect(page.locator(".developer-result")).toContainText('"name": "YOYO"');
+  await page.goto("/zh-TW/tools/3d-viewer");
+  await expect(page.getByRole("heading", { name: "3D 模型與空間檢視" })).toBeVisible();
+  await expect(page.locator('input[type="file"]')).toHaveAttribute("accept", /\.ifc/);
+  await expect(page.getByRole("group", { name: "檢視方式" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "人體尺度" })).toBeVisible();
+  await page.locator('input[type="file"]').setInputFiles({ name: "triangle.glb", mimeType: "model/gltf-binary", buffer: makeTriangleGlb() });
+  await expect(page.locator(".model-stage-footer")).toContainText("triangle.glb", { timeout: 15000 });
 });

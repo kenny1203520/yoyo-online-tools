@@ -17,7 +17,7 @@ for (const [index, origin] of ['https://one.example.test','https://two.example.t
     }
     assert.ok(ready,'Container did not start');
     const xml=await (await fetch(base+'/sitemap.xml')).text();
-    assert.equal((xml.match(/<loc>/g)||[]).length,indexable ? 14 : 0);
+    assert.equal((xml.match(/<loc>/g)||[]).length,indexable ? 28 : 0);
     if(indexable) assert.ok(xml.includes(origin));
     const robots=await (await fetch(base+'/robots.txt')).text();
     assert.ok(indexable ? robots.includes(`${origin}/sitemap.xml`) : robots.includes('Disallow: /'));

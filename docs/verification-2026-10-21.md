@@ -1,5 +1,7 @@
 # 多語言與部署驗證紀錄
 
+> 歷史紀錄：以下結果屬當時版本，不能套用到目前未提交修改。2026-10-22 的實作與重新驗收見 [完成度稽核](completion-audit-2026-10-22.md)。
+
 ## 已執行
 
 - Linux Docker／Node.js 24：乾淨 npm ci、ESLint、型別檢查、5 項行為測試與正式 Webpack／standalone 建置通過。

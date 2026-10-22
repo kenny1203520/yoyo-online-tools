@@ -4,7 +4,7 @@ import { useI18n } from "@/lib/use-i18n";
 
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
-import { AlignLeft, ArrowDownToLine, ArrowUpRight, CaseSensitive, Crop, Images, ListFilter, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { AlignLeft, ArrowDownToLine, ArrowUpRight, Binary, Box, Braces, CaseSensitive, Clock3, Code2, Crop, GitCompareArrows, Images, Link2, ListFilter, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { searchTools, tools, type Tool } from "@/lib/tools";
 
 type CategoryFilter = "all" | Tool["category"];
@@ -17,6 +17,13 @@ function toolIcon(tool: Tool) {
   if (tool.icon === "compress") return ArrowDownToLine;
   if (tool.icon === "cleanup") return AlignLeft;
   if (tool.icon === "duplicates") return ListFilter;
+  if (tool.icon === "code") return Code2;
+  if (tool.icon === "diff") return GitCompareArrows;
+  if (tool.icon === "binary") return Binary;
+  if (tool.icon === "link") return Link2;
+  if (tool.icon === "clock") return Clock3;
+  if (tool.icon === "regex") return Braces;
+  if (tool.icon === "box") return Box;
   return CaseSensitive;
 }
 
@@ -26,6 +33,8 @@ export function ToolDirectory() {
   { id: "all", label: t("allTools"), englishLabel: "All tools" },
   { id: "image", label: t("images"), englishLabel: "Images" },
   { id: "text", label: t("text"), englishLabel: "Text" },
+  { id: "developer", label: t("developerTools"), englishLabel: "Developer" },
+  { id: "3d", label: t("3dTools"), englishLabel: "3D" },
 ];
 
   const { query, setQuery, category, setCategory } = useDirectoryState();
@@ -39,6 +48,8 @@ export function ToolDirectory() {
       if (window.location.hash === "#tools") setCategory("all");
       if (window.location.hash === "#image-tools") setCategory("image");
       if (window.location.hash === "#text-tools") setCategory("text");
+      if (window.location.hash === "#developer-tools") setCategory("developer");
+      if (window.location.hash === "#3d-tools") setCategory("3d");
     }
     syncCategoryFromHash();
     window.addEventListener("hashchange", syncCategoryFromHash);
@@ -81,7 +92,7 @@ export function ToolDirectory() {
         <div className="tool-category-filters" role="group" aria-label={t("filterByToolCategory")}>
           {categories.map((item) => {
             const count = item.id === "all" ? tools.length : tools.filter((tool) => tool.category === item.id).length;
-            return <button key={item.id} id={item.id === "image" ? "image-tools" : item.id === "text" ? "text-tools" : undefined} className="tool-category-filter" type="button" aria-pressed={category === item.id} onClick={() => setCategory(item.id)}>{item.label}<span>{count}</span><span className="sr-only">{item.englishLabel}</span></button>;
+            return <button key={item.id} id={item.id === "image" ? "image-tools" : item.id === "text" ? "text-tools" : item.id === "developer" ? "developer-tools" : item.id === "3d" ? "3d-tools" : undefined} className="tool-category-filter" type="button" aria-pressed={category === item.id} onClick={() => setCategory(item.id)}>{item.label}<span>{count}</span><span className="sr-only">{item.englishLabel}</span></button>;
           })}
         </div>
         {visibleTools.length ? <div className="tool-grid" aria-live="polite">

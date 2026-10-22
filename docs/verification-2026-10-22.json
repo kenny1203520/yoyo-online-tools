@@ -1,0 +1,413 @@
+{
+  "date": "2026-10-22",
+  "timezone": "Asia/Taipei",
+  "overallStatus": "pending-manual-and-release-acceptance",
+  "source": {
+    "algorithm": "sha256(path + NUL + content + NUL), sorted; src + public excluding generated sw.js/wasm + package/config/Dockerfile",
+    "sha256": "b77e3d37e1de93bcac2458d140e714b9900017fd20afe33542ee0f9d573c6df0",
+    "files": 56
+  },
+  "head": "2eb3c0f7c7d50d537a24b5e7176fd8124d1c2e56",
+  "includesUncommittedChanges": true,
+  "checks": {
+    "node": "24.22.1",
+    "lint": "passed",
+    "typecheck": "passed",
+    "unitTests": {
+      "passed": 23,
+      "failed": 0
+    },
+    "productionDependencyAudit": {
+      "vulnerabilities": 0,
+      "command": "npm audit --omit=dev",
+      "scope": "production dependencies only"
+    }
+  },
+  "browserRuns": [
+    {
+      "name": "five-browser-matrix",
+      "scope": "Final source: full 26-scenario suite in each of five projects",
+      "report": "out/final-browser-results.json",
+      "sha256": "64c5997bf9c3be77c5eea4b4ba7d6bb7ea68eaca86e9c6d8452d3df85ac5acce",
+      "stats": {
+        "startTime": "2026-10-22T07:52:09.556Z",
+        "duration": 198348.441,
+        "expected": 130,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "projects": {
+        "chromium": 26,
+        "firefox": 26,
+        "webkit": 26,
+        "mobile-chrome": 26,
+        "mobile-safari": 26
+      }
+    },
+    {
+      "name": "locale-regression",
+      "scope": "Final locale error cleanup: one additional scenario in each of five projects",
+      "report": "out/locale-browser-results.json",
+      "sha256": "f42aba06dde8d3b57341f9cc28af5ae7f330faa8d3ab71ac370fcb86960b237d",
+      "stats": {
+        "startTime": "2026-10-22T07:38:46.090Z",
+        "duration": 13259.323999999999,
+        "expected": 5,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "projects": {
+        "chromium": 1,
+        "firefox": 1,
+        "webkit": 1,
+        "mobile-chrome": 1,
+        "mobile-safari": 1
+      }
+    },
+    {
+      "name": "installed-chrome-edge",
+      "scope": "Final source: full 26-scenario suite in installed Chrome and Edge",
+      "report": "out/system-browser-results.json",
+      "sha256": "5ed168cf35424e1d8e140e62443cef358e591543bb55c690331413c784fcd9e6",
+      "stats": {
+        "startTime": "2026-10-22T07:41:19.845Z",
+        "duration": 66776.403,
+        "expected": 52,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "projects": {
+        "google-chrome": 26,
+        "microsoft-edge": 26
+      }
+    }
+  ],
+  "installedBrowsers": {
+    "google-chrome": "155.0.8059.85",
+    "microsoft-edge": "155.0.4283.62",
+    "mode": "Windows headless desktop automation; not manual device acceptance"
+  },
+  "models": {
+    "sources": "tests/fixtures/models/sources.json",
+    "complexity": [
+      {
+        "name": "example.ifc",
+        "ifcEntities": 6487
+      },
+      {
+        "name": "large.ifc",
+        "ifcEntities": 714485
+      }
+    ],
+    "timings": [
+      {
+        "run": "five-browser-matrix",
+        "project": "chromium",
+        "measurement": "model-timings",
+        "data": {
+          "project": "chromium",
+          "records": [
+            {
+              "name": "box.glb",
+              "milliseconds": 414
+            },
+            {
+              "name": "textured.zip",
+              "milliseconds": 123
+            },
+            {
+              "name": "monkey.fbx",
+              "milliseconds": 163
+            },
+            {
+              "name": "example.ifc",
+              "milliseconds": 931
+            }
+          ]
+        }
+      },
+      {
+        "run": "five-browser-matrix",
+        "project": "chromium",
+        "measurement": "large-ifc-timings",
+        "data": {
+          "project": "chromium",
+          "bytes": 49286967,
+          "loadMs": 5160,
+          "cancellationMs": 82,
+          "source": "tests/fixtures/models/sources.json"
+        }
+      },
+      {
+        "run": "five-browser-matrix",
+        "project": "firefox",
+        "measurement": "model-timings",
+        "data": {
+          "project": "firefox",
+          "records": [
+            {
+              "name": "box.glb",
+              "milliseconds": 487
+            },
+            {
+              "name": "textured.zip",
+              "milliseconds": 118
+            },
+            {
+              "name": "monkey.fbx",
+              "milliseconds": 79
+            },
+            {
+              "name": "example.ifc",
+              "milliseconds": 1000
+            }
+          ]
+        }
+      },
+      {
+        "run": "five-browser-matrix",
+        "project": "firefox",
+        "measurement": "large-ifc-timings",
+        "data": {
+          "project": "firefox",
+          "bytes": 49286967,
+          "loadMs": 2812,
+          "cancellationMs": 75,
+          "source": "tests/fixtures/models/sources.json"
+        }
+      },
+      {
+        "run": "five-browser-matrix",
+        "project": "webkit",
+        "measurement": "model-timings",
+        "data": {
+          "project": "webkit",
+          "records": [
+            {
+              "name": "box.glb",
+              "milliseconds": 759
+            },
+            {
+              "name": "textured.zip",
+              "milliseconds": 556
+            },
+            {
+              "name": "monkey.fbx",
+              "milliseconds": 269
+            },
+            {
+              "name": "example.ifc",
+              "milliseconds": 1294
+            }
+          ]
+        }
+      },
+      {
+        "run": "five-browser-matrix",
+        "project": "webkit",
+        "measurement": "large-ifc-timings",
+        "data": {
+          "project": "webkit",
+          "bytes": 49286967,
+          "loadMs": 5759,
+          "cancellationMs": 391,
+          "source": "tests/fixtures/models/sources.json"
+        }
+      },
+      {
+        "run": "five-browser-matrix",
+        "project": "mobile-chrome",
+        "measurement": "model-timings",
+        "data": {
+          "project": "mobile-chrome",
+          "records": [
+            {
+              "name": "box.glb",
+              "milliseconds": 379
+            },
+            {
+              "name": "textured.zip",
+              "milliseconds": 176
+            },
+            {
+              "name": "monkey.fbx",
+              "milliseconds": 225
+            },
+            {
+              "name": "example.ifc",
+              "milliseconds": 912
+            }
+          ]
+        }
+      },
+      {
+        "run": "five-browser-matrix",
+        "project": "mobile-chrome",
+        "measurement": "large-ifc-timings",
+        "data": {
+          "project": "mobile-chrome",
+          "bytes": 49286967,
+          "loadMs": 3666,
+          "cancellationMs": 88,
+          "source": "tests/fixtures/models/sources.json"
+        }
+      },
+      {
+        "run": "five-browser-matrix",
+        "project": "mobile-safari",
+        "measurement": "model-timings",
+        "data": {
+          "project": "mobile-safari",
+          "records": [
+            {
+              "name": "box.glb",
+              "milliseconds": 493
+            },
+            {
+              "name": "textured.zip",
+              "milliseconds": 425
+            },
+            {
+              "name": "monkey.fbx",
+              "milliseconds": 132
+            },
+            {
+              "name": "example.ifc",
+              "milliseconds": 999
+            }
+          ]
+        }
+      },
+      {
+        "run": "five-browser-matrix",
+        "project": "mobile-safari",
+        "measurement": "large-ifc-timings",
+        "data": {
+          "project": "mobile-safari",
+          "bytes": 49286967,
+          "loadMs": 4160,
+          "cancellationMs": 238,
+          "source": "tests/fixtures/models/sources.json"
+        }
+      },
+      {
+        "run": "installed-chrome-edge",
+        "project": "google-chrome",
+        "measurement": "model-timings",
+        "data": {
+          "project": "google-chrome",
+          "records": [
+            {
+              "name": "box.glb",
+              "milliseconds": 275
+            },
+            {
+              "name": "textured.zip",
+              "milliseconds": 37
+            },
+            {
+              "name": "monkey.fbx",
+              "milliseconds": 81
+            },
+            {
+              "name": "example.ifc",
+              "milliseconds": 867
+            }
+          ]
+        }
+      },
+      {
+        "run": "installed-chrome-edge",
+        "project": "google-chrome",
+        "measurement": "large-ifc-timings",
+        "data": {
+          "project": "google-chrome",
+          "bytes": 49286967,
+          "loadMs": 2555,
+          "cancellationMs": 42,
+          "source": "tests/fixtures/models/sources.json"
+        }
+      },
+      {
+        "run": "installed-chrome-edge",
+        "project": "microsoft-edge",
+        "measurement": "model-timings",
+        "data": {
+          "project": "microsoft-edge",
+          "records": [
+            {
+              "name": "box.glb",
+              "milliseconds": 265
+            },
+            {
+              "name": "textured.zip",
+              "milliseconds": 49
+            },
+            {
+              "name": "monkey.fbx",
+              "milliseconds": 88
+            },
+            {
+              "name": "example.ifc",
+              "milliseconds": 869
+            }
+          ]
+        }
+      },
+      {
+        "run": "installed-chrome-edge",
+        "project": "microsoft-edge",
+        "measurement": "large-ifc-timings",
+        "data": {
+          "project": "microsoft-edge",
+          "bytes": 49286967,
+          "loadMs": 2593,
+          "cancellationMs": 55,
+          "source": "tests/fixtures/models/sources.json"
+        }
+      }
+    ],
+    "limits": "Desktop/emulated measurements are not phone or physical ARM performance guarantees"
+  },
+  "containers": {
+    "buildId": "Pne5ZUy62hV2rKDu2w42R",
+    "amd64": {
+      "tag": "yoyo:audit",
+      "imageId": "sha256:0e8dfb588b52f84da0e703322bca456b6dc1c7201886ff4ec47664317bf04aab",
+      "smoke": "passed"
+    },
+    "arm64": {
+      "tag": "yoyo:audit-arm64-final",
+      "imageId": "sha256:73841742aab44879adef62107890d9a109ff9ef8f9fd873c8abeca680022a433",
+      "smoke": "passed",
+      "assembly": "Native ARM64 build/dependencies from yoyo:audit-arm64; final portable .next and public copied from verified AMD64 build. .next was checked to contain no .node binaries. Docker Desktop emulated execution.",
+      "nativeBaseManifest": "sha256:1abcd94cc518ac9dff73b067a86e3a20c3280ea21fcb3bb39b8c523984dea8da"
+    },
+    "smokeScope": [
+      "three runtime domains",
+      "indexable and noindex sitemap/robots",
+      "two locale canonical URLs",
+      "1200x630 native PNG sharing images",
+      "UID 1001",
+      "healthcheck",
+      "startup failure without SITE_URL"
+    ]
+  },
+  "pending": [
+    "manual installation, keyboard, screen reader and OS text scaling",
+    "macOS Safari, iPhone Safari and Android Chrome on physical devices",
+    "3-5 ordinary users and 2-3 engineers using unguided scripts",
+    "actual large-model and first/third-person, collision, touch and human-scale tasks",
+    "CI for corresponding pushed source",
+    "public GHCR manifest and anonymous pull"
+  ],
+  "releaseProbe": {
+    "date": "2026-10-22",
+    "ghcrAnonymousTokenHttp": 403,
+    "edgeManifest": "manifest unknown",
+    "published": false
+  }
+}

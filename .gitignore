@@ -12,6 +12,7 @@
 # next.js
 /.next/
 /out/
+/public/wasm/
 
 # production
 /build
@@ -37,3 +38,8 @@ playwright-report/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Generated for each production build
+/public/sw.js
+/tests/fixtures/models/*
+!/tests/fixtures/models/sources.json

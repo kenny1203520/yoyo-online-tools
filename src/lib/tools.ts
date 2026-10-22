@@ -10,7 +10,7 @@ type ToolBase = {
   description: LocalizedText;
   searchTerms: LocalizedTerms;
   href: string;
-  category: "image" | "text";
+  category: "image" | "text" | "developer" | "3d";
   processing: "local";
 };
 
@@ -31,7 +31,20 @@ export type TextTool = ToolBase & {
   textMode: TextMode;
 };
 
-export type Tool = ImageTool | TextTool;
+export type DeveloperTool = ToolBase & {
+  category: "developer";
+  workspace: "developer";
+  icon: "code" | "diff" | "binary" | "link" | "clock" | "regex";
+  developerMode: "json" | "diff" | "base64" | "url" | "timestamp" | "regex";
+};
+
+export type ThreeTool = ToolBase & {
+  category: "3d";
+  workspace: "3d";
+  icon: "box";
+};
+
+export type Tool = ImageTool | TextTool | DeveloperTool | ThreeTool;
 
 export const tools: Tool[] = [
   {
@@ -76,6 +89,48 @@ export const tools: Tool[] = [
     searchTerms: { "zh-TW": ["文章字數", "字元統計", "計算字數", "文案長度", "字數限制", "中文字數", "單字數"], en: ["word counter", "word count", "character count", "count words", "count characters", "text length", "letter counter"] },
     href: "/tools/word-count", icon: "count", textMode: "count",
   },
+  {
+    slug: "json-formatter", category: "developer", workspace: "developer", processing: "local", developerMode: "json", icon: "code",
+    name: { "zh-TW": "JSON 格式化與驗證", en: "JSON Formatter and Validator" }, shortName: { "zh-TW": "格式化 JSON", en: "Format JSON" },
+    description: { "zh-TW": "格式化、壓縮 JSON，並定位語法錯誤。", en: "Format, minify, and validate JSON with error locations." },
+    searchTerms: { "zh-TW": ["json 格式化", "json 美化", "json 驗證", "json 錯誤", "json formatter", "pretty print"], en: ["json format", "format json", "json beautifier", "validate json", "json syntax error", "minify json"] }, href: "/tools/json-formatter",
+  },
+  {
+    slug: "text-diff", category: "developer", workspace: "developer", processing: "local", developerMode: "diff", icon: "diff",
+    name: { "zh-TW": "文字與 JSON 比對", en: "Text and JSON Diff" }, shortName: { "zh-TW": "比對差異", en: "Compare" },
+    description: { "zh-TW": "並排比較文字或 JSON，找出新增、刪除與修改。", en: "Compare text or JSON side by side to find additions, removals, and changes." },
+    searchTerms: { "zh-TW": ["比對文字", "文字差異", "json 比較", "compare text", "diff", "compare json"], en: ["text compare", "text difference", "compare files", "json compare", "diff viewer"] }, href: "/tools/text-diff",
+  },
+  {
+    slug: "base64", category: "developer", workspace: "developer", processing: "local", developerMode: "base64", icon: "binary",
+    name: { "zh-TW": "Base64 編解碼", en: "Base64 Encoder and Decoder" }, shortName: { "zh-TW": "Base64", en: "Base64" },
+    description: { "zh-TW": "將 UTF-8 文字編碼或解碼為 Base64 與 Base64url。", en: "Encode or decode UTF-8 text as Base64 or Base64url." },
+    searchTerms: { "zh-TW": ["base64 編碼", "base64 解碼", "base64url", "文字編碼"], en: ["base64 encode", "base64 decode", "base64url", "text encoding"] }, href: "/tools/base64",
+  },
+  {
+    slug: "url-encode-decode", category: "developer", workspace: "developer", processing: "local", developerMode: "url", icon: "link",
+    name: { "zh-TW": "URL 編碼與解碼", en: "URL Encoder and Decoder" }, shortName: { "zh-TW": "URL 編解碼", en: "URL encode" },
+    description: { "zh-TW": "編碼或解碼網址參數值與完整網址。", en: "Encode or decode URL parameter values and complete URLs." },
+    searchTerms: { "zh-TW": ["url encode", "url decode", "網址編碼", "百分比編碼", "percent encoding"], en: ["url encoding", "url decoding", "percent encode", "query parameter"] }, href: "/tools/url-encode-decode",
+  },
+  {
+    slug: "unix-timestamp", category: "developer", workspace: "developer", processing: "local", developerMode: "timestamp", icon: "clock",
+    name: { "zh-TW": "Unix 時間戳轉換", en: "Unix Timestamp Converter" }, shortName: { "zh-TW": "時間戳", en: "Timestamp" },
+    description: { "zh-TW": "轉換 Unix 時間戳與 ISO 日期，查看 UTC、台北及本地時間。", en: "Convert Unix timestamps and ISO dates across UTC, Taipei, and local time." },
+    searchTerms: { "zh-TW": ["unix timestamp", "時間戳轉換", "epoch time", "日期轉換", "毫秒時間"], en: ["unix time", "epoch converter", "timestamp to date", "date to timestamp", "milliseconds"] }, href: "/tools/unix-timestamp",
+  },
+  {
+    slug: "regex-tester", category: "developer", workspace: "developer", processing: "local", developerMode: "regex", icon: "regex",
+    name: { "zh-TW": "JavaScript 正規表示式測試", en: "JavaScript Regex Tester" }, shortName: { "zh-TW": "Regex 測試", en: "Regex tester" },
+    description: { "zh-TW": "測試 JavaScript 正規表示式、查看群組並預覽取代結果。", en: "Test JavaScript regular expressions, inspect groups, and preview replacements." },
+    searchTerms: { "zh-TW": ["正規表達式", "正則表達式", "regex tester", "regular expression", "regexp", "取代文字"], en: ["regex test", "regular expression tester", "regexp tester", "regex replace", "pattern match"] }, href: "/tools/regex-tester",
+  },
+  {
+    slug: "3d-viewer", category: "3d", workspace: "3d", processing: "local", icon: "box",
+    name: { "zh-TW": "3D 模型與空間檢視", en: "3D Model and Space Viewer" }, shortName: { "zh-TW": "3D 模型檢視", en: "3D viewer" },
+    description: { "zh-TW": "本機預覽 3D 與 IFC 模型，以人體尺度漫遊及量測空間。", en: "Preview local 3D and IFC models, walk at human scale, and measure spaces." },
+    searchTerms: { "zh-TW": ["3d 模型", "3d viewer", "ifc 檢視", "bim viewer", "模型預覽", "空間漫遊", "模型量測", "fbx viewer", "gltf viewer"], en: ["3d model viewer", "3d preview", "ifc viewer", "bim viewer", "walk through model", "scene scale", "fbx viewer", "gltf viewer"] }, href: "/tools/3d-viewer",
+  },
 ];
 
 export function localized<T extends LocalizedText>(value: T, locale: Locale = defaultLocale) {
@@ -98,6 +153,10 @@ export function getImageTools() {
 export function getTextTool(slug: string): TextTool | undefined {
   const tool = getTool(slug);
   return tool?.workspace === "text" ? tool : undefined;
+}
+
+export function getDeveloperTools() {
+  return tools.filter((tool): tool is DeveloperTool => tool.workspace === "developer");
 }
 
 export function getTextTools() {
@@ -140,7 +199,7 @@ export function matchesTool(tool: Tool, query: string) {
 
   const searchableValues = [
     tool.slug,
-    ...(tool.category === "image" ? ["圖片工具", "image tools", "photo tools"] : ["文字工具", "text tools", "writing tools"]),
+    ...(tool.category === "image" ? ["圖片工具", "image tools", "photo tools"] : tool.category === "text" ? ["文字工具", "text tools", "writing tools"] : tool.category === "developer" ? ["工程師工具", "developer tools", "coding tools"] : ["3D 工具", "3d tools", "model viewer"]),
     tool.category,
     ...Object.values(tool.name),
     ...Object.values(tool.shortName),
