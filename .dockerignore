@@ -15,3 +15,6 @@ test-results
 playwright-report
 notes
 docs
+
+tests/fixtures/models
+out

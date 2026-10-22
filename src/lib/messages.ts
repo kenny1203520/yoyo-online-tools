@@ -12,6 +12,9 @@ export type MessageParameters = {
   removeFile: { name: string }; outputAlt: { name: string }; originalAlt: { name: string };
   smallerBy: { size: string }; largerBy: { size: string }; batchSummary: { count: number; size: string };
   fileError: { name: string; error: string }; unsupportedOutput: { format: string };
+  developerErrorLocation: { line: number; column: number };
+  developerPosition: { position: number };
+  threeLoadingProgress: { progress: number };
 };
 export type MessageArguments<Key extends MessageKey> = Key extends keyof MessageParameters
   ? [values: MessageParameters[Key]] : [values?: undefined];

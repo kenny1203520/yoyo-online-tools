@@ -1,0 +1,44 @@
+[
+  {
+    "name": "box.glb",
+    "url": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/15cd02d304e54cb42a4db4eefe719f76190f4b68/Models/BoxTextured/glTF-Binary/BoxTextured.glb",
+    "bytes": 5956,
+    "sha256": "b510eca2e2ef33f62f9ed57d6e7ce2d10ebb2bdebc4a8e59d347719ba81abdf4"
+  },
+  {
+    "name": "BoxTextured.gltf",
+    "url": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/15cd02d304e54cb42a4db4eefe719f76190f4b68/Models/BoxTextured/glTF/BoxTextured.gltf",
+    "bytes": 3695,
+    "sha256": "1e9003a4a2a8822ff60da529357bd8e4dec4a59b1a479017993e7e2ad5fcebef"
+  },
+  {
+    "name": "BoxTextured0.bin",
+    "url": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/15cd02d304e54cb42a4db4eefe719f76190f4b68/Models/BoxTextured/glTF/BoxTextured0.bin",
+    "bytes": 840,
+    "sha256": "2e8c0483fa6665c686ec345f89dcbb2a694a587442584d09f8a83a59633327bc"
+  },
+  {
+    "name": "CesiumLogoFlat.png",
+    "url": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/15cd02d304e54cb42a4db4eefe719f76190f4b68/Models/BoxTextured/glTF/CesiumLogoFlat.png",
+    "bytes": 3750,
+    "sha256": "9c22b05c5b136d03c5621a8765e50a8322be6c35b9de53e9fe22685840d7f469"
+  },
+  {
+    "name": "monkey.fbx",
+    "url": "https://raw.githubusercontent.com/mrdoob/three.js/6b608fca539c49cfa8348a48e250e7ae01c03aea/examples/models/fbx/monkey_embedded_texture.fbx",
+    "bytes": 319516,
+    "sha256": "3294f519234496ef6db3f0ca4d8c43f2b6f54ca2083910d4b05b2a2f5d564973"
+  },
+  {
+    "name": "example.ifc",
+    "url": "https://raw.githubusercontent.com/ThatOpen/engine_web-ifc/6b8bf3fbbe1be8d0e1246a2f5f7eca99bd590117/examples/example.ifc",
+    "bytes": 413681,
+    "sha256": "db372f3f57796e2f572958c1c144bf3d8be7912493738636a2152cf18f08a14d"
+  },
+  {
+    "name": "large.ifc",
+    "url": "https://raw.githubusercontent.com/ThatOpen/engine_web-ifc/6b8bf3fbbe1be8d0e1246a2f5f7eca99bd590117/tests/ifcfiles/public/schependomlaan.ifc",
+    "bytes": 49286967,
+    "sha256": "2c3565ca1904f2aa61adab92024cf3755b2c5b21a498144d3094d7cb58cebec7"
+  }
+]

@@ -39,7 +39,9 @@ test("cross-language search, normalization, ranking and categories", () => {
   assert.equal(searchTools("Word and Character Counter")[0]?.slug, "word-count");
   assert.equal(searchTools("照片太大", "text").length, 0);
   assert.equal(searchTools("nothing-matches-123").length, 0);
-  assert.equal(searchTools("").length, 6);
+  assert.equal(searchTools("").length, 13);
+  assert.equal(searchTools("IFC viewer")[0]?.slug, "3d-viewer");
+  assert.equal(searchTools("regex tester")[0]?.slug, "regex-tester");
   assert.deepEqual(searchTools("image"), searchTools("image"));
 });
 test("deployment origin validation and index defaults", () => {
@@ -55,8 +57,8 @@ test("same build uses runtime domains for all localized SEO", () => {
     for (const domain of ["https://one.example.test", "https://two.example.test"]) {
       process.env.SITE_URL = domain; process.env.SITE_INDEXABLE = "true";
       const entries = sitemapEntries();
-      assert.equal(entries.length, 14);
-      assert.equal(new Set(entries.map((entry) => entry.url)).size, 14);
+      assert.equal(entries.length, 28);
+      assert.equal(new Set(entries.map((entry) => entry.url)).size, 28);
       assert.ok(entries.every((entry) => entry.url.startsWith(domain)));
       for (const locale of ["zh-TW", "en"] as const) {
         const metadata = pageMetadata(locale, tools[0]);

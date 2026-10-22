@@ -2,12 +2,13 @@
 import { useI18n } from "@/lib/use-i18n";
 import { message, type MessageRef } from "@/lib/messages";
 import { useRouter } from "next/navigation";
+import { createTextWorker } from "@/lib/tool-workers";
 
 import Link from "next/link";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { AlignLeft, ArrowDownToLine, Check, Clipboard, FileText, ListFilter, RotateCcw, ShieldCheck, Upload, WholeWord } from "lucide-react";
 import { getTextTools, localized, type TextTool } from "@/lib/tools";
-import { decodeUtf8TextFile, DEFAULT_TEXT_OPTIONS, getTextStats, MAX_TEXT_BYTES, safeTextFileStem, transformText, type TextCleanupOptions, type TextStats } from "@/lib/text-processing";
+import { decodeUtf8TextFile, DEFAULT_TEXT_OPTIONS, MAX_TEXT_BYTES, safeTextFileStem, type TextCleanupOptions, type TextStats } from "@/lib/text-processing";
 
 type ProcessedText = {
   source: string;
@@ -69,27 +70,32 @@ export function TextWorkspace({ tool }: { tool: TextTool }) {
 
   useEffect(() => {
     const requestId = ++requestVersion.current;
+    let worker: Worker | undefined;
+    let deadline: number | undefined;
+    const fail = () => {
+      worker?.terminate();
+      if (requestId !== requestVersion.current) return;
+      setNotice(message("theTextPreviewCouldNotBe")); setProcessed(null); setProcessedRevision(revision);
+    };
     const timer = window.setTimeout(() => {
       try {
-        const transformed = transformText(source, options);
-        const nextResult: ProcessedText = {
-          source,
-          output: transformed.value,
-          sourceStats: getTextStats(source),
-          outputStats: getTextStats(transformed.value),
-          removedDuplicateLines: transformed.removedDuplicateLines,
+        worker = createTextWorker();
+        deadline = window.setTimeout(fail, 15000);
+        worker.onmessage = (event: MessageEvent<{ ready?: boolean; requestId?: number; result?: ProcessedText; error?: boolean }>) => {
+          if (event.data.ready && requestId === requestVersion.current) {
+            window.clearTimeout(deadline); deadline = window.setTimeout(fail, 5000);
+            worker?.postMessage({ requestId, source, options }); return;
+          }
+          if (event.data.requestId !== requestId || requestId !== requestVersion.current) return;
+          window.clearTimeout(deadline); worker?.terminate();
+          if (!event.data.result || event.data.error) { fail(); return; }
+          setProcessed(event.data.result); setProcessedRevision(revision);
         };
-        if (requestId !== requestVersion.current) return;
-        setProcessed(nextResult);
-        setProcessedRevision(revision);
-      } catch {
-        if (requestId !== requestVersion.current) return;
-        setNotice(message("theTextPreviewCouldNotBe"));
-        setProcessed(null);
-        setProcessedRevision(revision);
-      }
+        worker.onerror = fail;
+      } catch { fail(); }
     }, 300);
-    return () => window.clearTimeout(timer);
+    return () => { window.clearTimeout(timer); window.clearTimeout(deadline); worker?.terminate(); };
+
   }, [options, revision, source]);
 
   function updateSource(nextSource: string, fileName: string | null = sourceFileName) {
@@ -97,6 +103,7 @@ export function TextWorkspace({ tool }: { tool: TextTool }) {
       setNotice(message("textExceedsThe1MibLimit"));
       return;
     }
+    requestVersion.current++;
     setSource(nextSource);
     setSourceFileName(fileName);
     setRevision((current) => current + 1);
@@ -120,12 +127,14 @@ export function TextWorkspace({ tool }: { tool: TextTool }) {
       return;
     }
     if (source && !window.confirm(t("importingThisFileWillReplaceYour"))) return;
+    const version = requestVersion.current;
     try {
       const value = decodeUtf8TextFile(await file.arrayBuffer());
       if (new TextEncoder().encode(value).byteLength > MAX_TEXT_BYTES) {
         setNotice(message("theDecodedTextExceedsThe1"));
         return;
       }
+      if (version !== requestVersion.current) return;
       setPreviousSource(source);
       updateSource(value, file.name);
     } catch {
@@ -134,6 +143,7 @@ export function TextWorkspace({ tool }: { tool: TextTool }) {
   }
 
   function updateOption<Key extends keyof TextCleanupOptions>(key: Key, value: TextCleanupOptions[Key]) {
+    requestVersion.current++;
     setOptions((current) => ({ ...current, [key]: value }));
     setRevision((current) => current + 1);
     setNotice(message("settingsUpdatedRefreshingYourPreview"));
