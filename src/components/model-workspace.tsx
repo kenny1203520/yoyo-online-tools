@@ -146,6 +146,7 @@ export function ModelWorkspace() {
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const orbitRef = useRef<OrbitControls | null>(null);
+  const gridRef = useRef<THREE.GridHelper | null>(null);
   const modelRef = useRef<THREE.Group | null>(null);
   const stageRootRef = useRef<THREE.Group | null>(null);
   const stageCenterRef = useRef(new THREE.Vector3());
@@ -175,6 +176,7 @@ export function ModelWorkspace() {
   const [selectedFloor, setSelectedFloor] = useState("");
   const [selectedComponent, setSelectedComponent] = useState<IfcComponent | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("orbit");
+  const [showGrid, setShowGrid] = useState(true);
   const [movement, setMovement] = useState<MovementMode>("walk");
   const [unit, setUnit] = useState("m");
   const [unitScale, setUnitScale] = useState(1);
@@ -227,6 +229,7 @@ export function ModelWorkspace() {
   const controlsState = useRef({ viewMode, movement, touchMove, humanHeight, eyeHeight, selectedComponent, personPlaced });
 
   useEffect(() => { translateRef.current = t; }, [t]);
+  useEffect(() => { if (gridRef.current) gridRef.current.visible = showGrid; }, [showGrid]);
 
   const currentScanFrame = useMemo(() => scanProject?.frames[scanFrameIndex] ?? null, [scanProject, scanFrameIndex]);
   const scanPhotoRotation = currentScanFrame ? scanFrameRotations[currentScanFrame.index] ?? 0 : 0;
@@ -561,7 +564,7 @@ export function ModelWorkspace() {
     renderer.domElement.setAttribute("aria-label", translateRef.current("threeViewerTitle"));
     mount.appendChild(renderer.domElement); rendererRef.current = renderer; sceneRef.current = scene; cameraRef.current = camera;
     const orbit = new OrbitControls(camera, renderer.domElement); orbit.enableDamping = true; orbit.target.set(0, 1, 0); orbitRef.current = orbit;
-    const grid = new THREE.GridHelper(20, 20, 0x516d67, 0x263c3b); scene.add(grid);
+    const grid = new THREE.GridHelper(20, 20, 0x516d67, 0x263c3b); scene.add(grid); gridRef.current = grid;
     const axes = new THREE.AxesHelper(1.5); scene.add(axes);
     const person = new THREE.Group();
     const personMaterial = new THREE.MeshStandardMaterial({ color: 0x45c9a2, roughness: .72, emissive: 0x073d30 });
@@ -702,6 +705,7 @@ export function ModelWorkspace() {
       cancelAnimationFrame(frame); observer.disconnect(); renderer.domElement.removeEventListener("keydown", onKeyDown); renderer.domElement.removeEventListener("keyup", onKeyUp); window.removeEventListener("blur", clearKeys); document.removeEventListener("visibilitychange", clearKeys); renderer.domElement.removeEventListener("contextmenu", onContextMenu);
       orbit.dispose(); renderer.dispose(); person.traverse((object) => { if (object instanceof THREE.Mesh) { object.geometry.dispose(); (Array.isArray(object.material) ? object.material : [object.material]).forEach((material) => material.dispose()); } }); if (renderer.domElement.parentElement === mount) mount.removeChild(renderer.domElement);
       rendererRef.current = null; orbitRef.current = null; sceneRef.current = null; cameraRef.current = null;
+      gridRef.current = null;
       humanRef.current = null;
     };
   }, [disposeModel, invalidateLoad]);
@@ -1022,6 +1026,7 @@ export function ModelWorkspace() {
           {viewMode !== "orbit" && <label className="model-movement-select">{t("threeMovementMode")}<select value={movement} onChange={(event) => setMovement(event.target.value as MovementMode)}><option value="walk">{t("threeWalk")}</option><option value="fly">{t("threeFly")}</option></select></label>}
           <button type="button" className="icon-button model-place-person" aria-pressed={placementMode} disabled={!modelName || scanFollowCamera} onClick={togglePlacementMode} aria-label={placementMode ? t("threeCancelPlacement") : t("threePlacePerson")} title={placementMode ? t("threeCancelPlacement") : t("threePlacePerson")}><PersonStanding size={18} />{placementMode && <span>{t("threePlacePersonActive")}</span>}</button>
           {immersiveMode && <button type="button" className="icon-button" aria-expanded={immersiveSettingsOpen} aria-controls="model-settings-panel" onClick={() => setImmersiveSettingsOpen((open) => !open)} aria-label={t("threeImmersiveSettings")} title={t("threeImmersiveSettings")}><SlidersHorizontal size={18} /></button>}
+          <button type="button" className="icon-button" aria-pressed={showGrid} onClick={() => setShowGrid((visible) => !visible)} aria-label={showGrid ? t("threeHideGrid") : t("threeShowGrid")} title={showGrid ? t("threeHideGrid") : t("threeShowGrid")}>{showGrid ? <Eye size={18} /> : <EyeOff size={18} />}</button>
           <button type="button" className="icon-button" onClick={() => { if (scanFollowCamera) setScanFollow(false); if (cameraRef.current && orbitRef.current) { cameraRef.current.position.set(4, 3, 5); orbitRef.current.target.set(0, 0, 0); orbitRef.current.update(); } }} aria-label={t("threeResetView")} title={t("threeResetView")}><Focus size={17} /></button>
           <button ref={fullscreenButtonRef} type="button" className="icon-button" disabled={!modelName} onClick={immersiveMode ? exitImmersive : enterImmersive} aria-label={immersiveMode ? t("threeExitImmersive") : t("threeEnterImmersive")} title={immersiveMode ? t("threeExitImmersive") : t("threeEnterImmersive")}>{immersiveMode ? <Minimize size={18} /> : <Maximize size={18} />}</button>
           {modelName && <button type="button" className="icon-button" onClick={() => { clearScanProject(); disposeModel(); }} aria-label={t("threeClearModel")} title={t("threeClearModel")}><X size={17} /></button>}
@@ -1087,6 +1092,7 @@ export function ModelWorkspace() {
           {scanPreviewMode === "depth" && scanRawReadout && <p className="scan-depth-readout" role="status">{scanRawReadout}</p>}
         </section>}
         <section className="model-side-section"><h2><Gauge size={17} />{t("threeHumanScale")}</h2><label>{t("threeUnit")}<select value={unit} onChange={(event) => { const next = event.target.value; const factor = UNIT_METERS[next] / UNIT_METERS[unit]; const nextScale = unitScale * factor; updateStageRootScale(nextScale); setModelDimensions((current) => current?.clone().multiplyScalar(factor) ?? null); setUnitScale(nextScale); setUnit(next); }}><option value="m">{t("threeMeters")}</option><option value="cm">{t("threeCentimeters")}</option><option value="mm">{t("threeMillimeters")}</option><option value="ft">{t("threeFeet")}</option><option value="in">{t("threeInches")}</option></select></label>
+          {modelName.toLowerCase().endsWith(".obj") && <p className="model-unit-note">{t("threeObjUnitNote")}</p>}
           <label>{t("threeHeight")} <output>{humanHeight.toFixed(2)} m</output><input type="range" min="1.2" max="2.2" step="0.01" value={humanHeight} onChange={(event) => { const height = Number(event.target.value); const scale = height / humanHeight; setHumanHeight(height); setEyeHeight((current) => Math.min(height, Math.max(1, current * scale))); }} /></label>
           <label>{t("threeEyeHeight")} <output>{eyeHeight.toFixed(2)} m</output><input type="range" min="1.0" max={humanHeight} step="0.01" value={Math.min(eyeHeight, humanHeight)} onChange={(event) => setEyeHeight(Number(event.target.value))} /></label>
           {personPlaced && <button type="button" className="button-secondary model-remove-person" onClick={removeHuman}><PersonStanding size={15} /><X size={14} />{t("threeRemovePerson")}</button>}

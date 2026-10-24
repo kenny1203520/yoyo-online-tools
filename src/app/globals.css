@@ -747,6 +747,7 @@ button, label, p, h1, h2, h3, .tool-card-content, .developer-local, .model-priva
 @media (pointer:coarse) { .model-workbench[data-immersive] .model-touch-pad { right:auto; bottom:calc(126px + env(safe-area-inset-bottom, 0px)); left:calc(16px + env(safe-area-inset-left, 0px)); } }
 .model-placement-hint, .scan-follow-issue { padding:8px 10px; border-radius:7px; color:#735516!important; background:#fff8df; }
 .model-remove-person { display:inline-flex; align-items:center; gap:5px; margin-top:3px; }
+.model-unit-note { margin:0; color:var(--muted); font-size:.8rem; line-height:1.45; }
 .scan-photo-orientation { display:flex; flex-wrap:wrap; align-items:center; gap:5px; }
 .scan-photo-orientation button { display:inline-flex; align-items:center; justify-content:center; gap:5px; min-height:38px; padding:6px 9px; border:1px solid #dbe3dc; border-radius:7px; color:#35564c; background:#fff; font-size:.85rem; cursor:pointer; }
 .scan-photo-orientation span { min-width:3.2em; color:var(--muted); font-variant-numeric:tabular-nums; text-align:center; }
