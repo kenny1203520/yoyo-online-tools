@@ -15,6 +15,11 @@ export type MessageParameters = {
   developerErrorLocation: { line: number; column: number };
   developerPosition: { position: number };
   threeLoadingProgress: { progress: number };
+  threeScanSummary: { frames: number; photos: number; duration: string };
+  threeScanCurrentFrame: { current: number; total: number; time: string };
+  threeScanPhotoAlt: { index: number };
+  threeScanDepthRange: { minimum: number; maximum: number };
+  threeScanDepthValue: { value: number; x: number; y: number };
 };
 export type MessageArguments<Key extends MessageKey> = Key extends keyof MessageParameters
   ? [values: MessageParameters[Key]] : [values?: undefined];
