@@ -439,6 +439,7 @@ export function ModelWorkspace() {
 
   function changeViewMode(mode: ViewMode) {
     if (mode !== "orbit" && !personPlaced) { setNotice(t("threePlacePersonFirst")); return; }
+    if (humanRef.current) humanRef.current.visible = personPlaced && mode !== "first";
     if (scanFollowCamera) {
       scanViewRef.current = { ...scanViewRef.current, follow: false };
       restoreScanCamera();
@@ -564,10 +565,29 @@ export function ModelWorkspace() {
     const axes = new THREE.AxesHelper(1.5); scene.add(axes);
     const person = new THREE.Group();
     const personMaterial = new THREE.MeshStandardMaterial({ color: 0x45c9a2, roughness: .72, emissive: 0x073d30 });
-    const body = new THREE.Mesh(new THREE.CapsuleGeometry(.17, 1.36, 5, 10), personMaterial);
-    body.position.y = .85; body.castShadow = false; person.add(body);
-    const head = new THREE.Mesh(new THREE.SphereGeometry(.115, 16, 12), new THREE.MeshStandardMaterial({ color: 0xf2c7a5, roughness: .78 }));
-    head.position.y = 1.585; person.add(head); person.visible = false; person.name = "Human scale reference"; person.userData.referenceHeight = 1.7;
+    const limbMaterial = new THREE.MeshStandardMaterial({ color: 0x287d68, roughness: .76, emissive: 0x06271f });
+    const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf2c7a5, roughness: .78 });
+    const addHumanCapsule = (radius: number, length: number, x: number, y: number, z: number, material: THREE.Material, rotationZ = 0) => {
+      const part = new THREE.Mesh(new THREE.CapsuleGeometry(radius, length, 4, 8), material);
+      part.position.set(x, y, z); part.rotation.z = rotationZ; part.castShadow = false; person.add(part);
+      return part;
+    };
+    addHumanCapsule(.18, .52, 0, 1.16, 0, personMaterial);
+    const pelvis = new THREE.Mesh(new THREE.SphereGeometry(.19, 16, 12), limbMaterial);
+    pelvis.position.set(0, .78, 0); pelvis.scale.set(1.08, .72, .8); person.add(pelvis);
+    addHumanCapsule(.065, .42, -.28, 1.08, 0, limbMaterial, -.1);
+    addHumanCapsule(.065, .42, .28, 1.08, 0, limbMaterial, .1);
+    addHumanCapsule(.075, .62, -.105, .42, 0, limbMaterial);
+    addHumanCapsule(.075, .62, .105, .42, 0, limbMaterial);
+    for (const x of [-.105, .105]) {
+      const foot = new THREE.Mesh(new THREE.BoxGeometry(.14, .08, .25), limbMaterial);
+      foot.position.set(x, .045, -.055); foot.castShadow = false; person.add(foot);
+    }
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(.065, .075, .12, 12), headMaterial);
+    neck.position.y = 1.53; person.add(neck);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(.13, 16, 12), headMaterial);
+    head.position.y = 1.57; person.add(head);
+    person.visible = false; person.name = "Human scale reference"; person.userData.referenceHeight = 1.7;
     scene.add(person); humanRef.current = person;
     const resize = () => {
       const width = mount.clientWidth; const height = mount.clientHeight;
@@ -582,6 +602,7 @@ export function ModelWorkspace() {
       const delta = frameTimeRef.current ? Math.min(.05, Math.max(0, (time - frameTimeRef.current) / 1000)) : 0;
       frameTimeRef.current = time;
       const currentControls = controlsState.current;
+      if (humanRef.current) humanRef.current.visible = currentControls.personPlaced && currentControls.viewMode !== "first";
       const scanView = scanViewRef.current;
       if (!scanView.follow && currentControls.viewMode !== "orbit" && currentControls.personPlaced && modelRef.current) {
         const direction = new THREE.Vector3();
@@ -786,6 +807,15 @@ export function ModelWorkspace() {
     setViewMode("orbit");
     setNotice(t("threePlacePersonHint"));
     setPlacementMode(true);
+  }
+
+  function removeHuman() {
+    if (scanFollowCamera) setScanFollow(false);
+    humanAnchorRef.current = null;
+    if (humanRef.current) { humanRef.current.position.set(0, 0, 0); humanRef.current.visible = false; }
+    playerRef.current.set(0, 0, 0); verticalVelocityRef.current = 0;
+    keysRef.current.clear(); setPersonPlaced(false); setPlacementMode(false); setViewMode("orbit"); setTouchMove("");
+    setNotice(t("threePersonRemoved"));
   }
 
   function readScanPixel(event: ReactPointerEvent<HTMLCanvasElement>) {
@@ -1002,11 +1032,11 @@ export function ModelWorkspace() {
           {placementMode && <div className="model-placement-overlay" role="status">{t("threePlacePersonHint")}</div>}
           {measurePoints.length === 1 && <div className="model-measure-hint">{t("threePickPoints")}</div>}
         </div>
-        {viewMode !== "orbit" && <div className="model-touch-pad" aria-label={t("threeTouchMove")}>
-          <button type="button" onPointerDown={() => setTouchMove("up")} onPointerUp={() => setTouchMove("")} onPointerLeave={() => setTouchMove("")} aria-label={t("threeForward")}>↑</button>
-          <button type="button" onPointerDown={() => setTouchMove("left")} onPointerUp={() => setTouchMove("")} onPointerLeave={() => setTouchMove("")} aria-label={t("threeLeft")}>←</button>
-          <button type="button" onPointerDown={() => setTouchMove("down")} onPointerUp={() => setTouchMove("")} onPointerLeave={() => setTouchMove("")} aria-label={t("threeBack")}>↓</button>
-          <button type="button" onPointerDown={() => setTouchMove("right")} onPointerUp={() => setTouchMove("")} onPointerLeave={() => setTouchMove("")} aria-label={t("threeRight")}>→</button>
+        {viewMode !== "orbit" && <div className="model-touch-pad" role="group" aria-label={t("threeTouchMove")}>
+          <button type="button" onPointerDown={() => setTouchMove("up")} onPointerUp={() => setTouchMove("")} onPointerLeave={() => setTouchMove("")} onPointerCancel={() => setTouchMove("")} aria-label={t("threeForward")}>↑</button>
+          <button type="button" onPointerDown={() => setTouchMove("left")} onPointerUp={() => setTouchMove("")} onPointerLeave={() => setTouchMove("")} onPointerCancel={() => setTouchMove("")} aria-label={t("threeLeft")}>←</button>
+          <button type="button" onPointerDown={() => setTouchMove("down")} onPointerUp={() => setTouchMove("")} onPointerLeave={() => setTouchMove("")} onPointerCancel={() => setTouchMove("")} aria-label={t("threeBack")}>↓</button>
+          <button type="button" onPointerDown={() => setTouchMove("right")} onPointerUp={() => setTouchMove("")} onPointerLeave={() => setTouchMove("")} onPointerCancel={() => setTouchMove("")} aria-label={t("threeRight")}>→</button>
         </div>}
         {modelName && <div className="model-stage-footer"><span><Box size={14} />{modelName}</span>{modelDimensions && <span>{t("threeBounds")}: {(modelDimensions.x / UNIT_METERS[unit]).toFixed(2)} × {(modelDimensions.y / UNIT_METERS[unit]).toFixed(2)} × {(modelDimensions.z / UNIT_METERS[unit]).toFixed(2)} {unit}</span>}</div>}
         {scanProject && immersiveMode && <div className="scan-immersive-dock" aria-label={t("threeScanProject")}>
@@ -1057,8 +1087,9 @@ export function ModelWorkspace() {
           {scanPreviewMode === "depth" && scanRawReadout && <p className="scan-depth-readout" role="status">{scanRawReadout}</p>}
         </section>}
         <section className="model-side-section"><h2><Gauge size={17} />{t("threeHumanScale")}</h2><label>{t("threeUnit")}<select value={unit} onChange={(event) => { const next = event.target.value; const factor = UNIT_METERS[next] / UNIT_METERS[unit]; const nextScale = unitScale * factor; updateStageRootScale(nextScale); setModelDimensions((current) => current?.clone().multiplyScalar(factor) ?? null); setUnitScale(nextScale); setUnit(next); }}><option value="m">{t("threeMeters")}</option><option value="cm">{t("threeCentimeters")}</option><option value="mm">{t("threeMillimeters")}</option><option value="ft">{t("threeFeet")}</option><option value="in">{t("threeInches")}</option></select></label>
-          <label>{t("threeHeight")} <output>{humanHeight.toFixed(2)} m</output><input type="range" min="1.2" max="2.2" step="0.01" value={humanHeight} onChange={(event) => { const height = Number(event.target.value); setHumanHeight(height); setEyeHeight((current) => Math.min(current, height)); }} /></label>
+          <label>{t("threeHeight")} <output>{humanHeight.toFixed(2)} m</output><input type="range" min="1.2" max="2.2" step="0.01" value={humanHeight} onChange={(event) => { const height = Number(event.target.value); const scale = height / humanHeight; setHumanHeight(height); setEyeHeight((current) => Math.min(height, Math.max(1, current * scale))); }} /></label>
           <label>{t("threeEyeHeight")} <output>{eyeHeight.toFixed(2)} m</output><input type="range" min="1.0" max={humanHeight} step="0.01" value={Math.min(eyeHeight, humanHeight)} onChange={(event) => setEyeHeight(Number(event.target.value))} /></label>
+          {personPlaced && <button type="button" className="button-secondary model-remove-person" onClick={removeHuman}><PersonStanding size={15} /><X size={14} />{t("threeRemovePerson")}</button>}
           {!personPlaced && <p className="model-placement-hint">{t("threePlacePersonFirst")}</p>}
         </section>
         <section className="model-side-section"><h2><Ruler size={17} />{t("threeMeasure")}</h2><p>{t("threeCalibratePrompt")}</p><div className="model-measure-actions"><button type="button" className="button-secondary" disabled={!modelName} onClick={() => { setMeasureMode("measure"); activeMeasureRef.current = "measure"; setMeasurePoints([]); measurePointsRef.current = []; }}>{t("threeMeasure")}</button><button type="button" className="button-secondary" disabled={!modelName} onClick={() => { setMeasureMode("calibrate"); activeMeasureRef.current = "calibrate"; setMeasurePoints([]); measurePointsRef.current = []; }}>{t("threeCalibration")}</button></div>

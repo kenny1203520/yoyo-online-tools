@@ -143,10 +143,13 @@ html[lang="en"] .hero h1 { font-size:clamp(2.25rem, 1rem + 2.5vw, 4.25rem); }
 .model-measure-hint { inset:12px 12px auto auto; }
 .model-touch-pad { display:none; position:absolute; right:16px; bottom:51px; z-index:2; grid-template-columns:repeat(3,42px); grid-template-rows:repeat(2,42px); gap:5px; }
 .model-touch-pad button { width:42px; height:42px; border:1px solid #8aa69a; border-radius:9px; color:white; background:rgb(25 48 42 / 82%); font-size:1.25rem; touch-action:none; }
+.model-touch-pad button:active { border-color:#8fe6c6; background:#34725f; transform:scale(.96); }
+.model-touch-pad button:focus-visible { outline:3px solid #8fe6c6; outline-offset:2px; }
 .model-touch-pad button:first-child { grid-column:2; }
 .model-touch-pad button:nth-child(2) { grid-column:1; grid-row:2; }
 .model-touch-pad button:nth-child(3) { grid-column:2; grid-row:2; }
 .model-touch-pad button:nth-child(4) { grid-column:3; grid-row:2; }
+@media (pointer:coarse) { .model-touch-pad { display:grid; } }
 .model-stage-footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:7px 14px; min-height:38px; padding:8px 11px; border-top:1px solid #2a3b39; color:#c7d7d0; font-size:0.875rem; }
 .model-stage-footer span { display:inline-flex; align-items:center; gap:6px; overflow-wrap:anywhere; }
 .model-sidebar { display:grid; gap:10px; min-width:0; }
@@ -741,7 +744,9 @@ button, label, p, h1, h2, h3, .tool-card-content, .developer-local, .model-priva
 .model-workbench[data-immersive] .model-touch-pad { right:calc(18px + env(safe-area-inset-right, 0px)); bottom:calc(114px + env(safe-area-inset-bottom, 0px)); }
 .model-workbench[data-immersive] .model-controls-hint, .model-workbench[data-immersive] .model-placement-overlay { top:calc(70px + env(safe-area-inset-top, 0px)); left:calc(12px + env(safe-area-inset-left, 0px)); max-width:min(34rem, calc(100% - 24px)); }
 .model-placement-overlay { position:absolute; z-index:3; top:12px; left:12px; max-width:calc(100% - 24px); margin:0; padding:8px 10px; border:1px solid #3b5950; border-radius:7px; color:#e4f1eb; background:rgb(15 31 27 / 88%); font-size:.875rem; pointer-events:none; }
+@media (pointer:coarse) { .model-workbench[data-immersive] .model-touch-pad { right:auto; bottom:calc(126px + env(safe-area-inset-bottom, 0px)); left:calc(16px + env(safe-area-inset-left, 0px)); } }
 .model-placement-hint, .scan-follow-issue { padding:8px 10px; border-radius:7px; color:#735516!important; background:#fff8df; }
+.model-remove-person { display:inline-flex; align-items:center; gap:5px; margin-top:3px; }
 .scan-photo-orientation { display:flex; flex-wrap:wrap; align-items:center; gap:5px; }
 .scan-photo-orientation button { display:inline-flex; align-items:center; justify-content:center; gap:5px; min-height:38px; padding:6px 9px; border:1px solid #dbe3dc; border-radius:7px; color:#35564c; background:#fff; font-size:.85rem; cursor:pointer; }
 .scan-photo-orientation span { min-width:3.2em; color:var(--muted); font-variant-numeric:tabular-nums; text-align:center; }
@@ -765,8 +770,9 @@ button, label, p, h1, h2, h3, .tool-card-content, .developer-local, .model-priva
   .model-workbench[data-immersive] .model-mode-tabs button { min-height:38px; padding:5px 7px; font-size:.8rem; }
   .model-workbench[data-immersive] .model-toolbar .icon-button { width:40px; height:40px; flex-basis:40px; }
   .model-workbench[data-immersive] .model-place-person { width:auto!important; }
+  .model-workbench[data-immersive] .model-touch-pad { right:auto; bottom:calc(126px + env(safe-area-inset-bottom, 0px)); left:calc(16px + env(safe-area-inset-left, 0px)); }
   .model-workbench[data-immersive] .model-sidebar { top:calc(112px + env(safe-area-inset-top, 0px)); bottom:calc(106px + env(safe-area-inset-bottom, 0px)); }
-  .model-workbench[data-immersive] .model-touch-pad { bottom:calc(116px + env(safe-area-inset-bottom, 0px)); }
+  .model-workbench[data-immersive] .model-touch-pad { bottom:calc(126px + env(safe-area-inset-bottom, 0px)); }
   .scan-immersive-dock { right:calc(8px + env(safe-area-inset-right, 0px)); bottom:calc(8px + env(safe-area-inset-bottom, 0px)); left:calc(8px + env(safe-area-inset-left, 0px)); width:calc(100% - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)); padding:7px 9px 5px; }
   .model-workbench[data-immersive] .scan-preview canvas { max-height:38dvh; }
 }
