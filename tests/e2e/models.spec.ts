@@ -166,7 +166,7 @@ test("human reference can be placed on a floor and first and third person use it
   await page.getByRole("button", { name: "Place person" }).click();
   const canvas = page.locator(".model-canvas canvas");
   const bounds = await canvas.boundingBox();
-  await page.mouse.click(bounds!.x + bounds!.width * .5, bounds!.y + bounds!.height * .42);
+  await canvas.click({ position: { x: bounds!.width * .5, y: bounds!.height * .42 } });
   await expect(firstPerson).toBeEnabled();
   await expect(thirdPerson).toBeEnabled();
   await page.getByRole("button", { name: "First person" }).click();
