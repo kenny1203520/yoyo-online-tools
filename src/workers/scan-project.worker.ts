@@ -111,7 +111,7 @@ async function loadPreview(id: number, frame: ScanProjectFrame) {
   send(id, "preview", value, transfer);
 }
 
-scope.onmessage = async (event) => {
+async function handleMessage(event: MessageEvent<Request>): Promise<void> {
   const request = event.data;
   try {
     if (request.type === "open") await openArchive(request.id, request.file);
@@ -123,4 +123,8 @@ scope.onmessage = async (event) => {
   } catch (error) {
     send(request.id, "error", error instanceof Error ? error.message : "The archive could not be read.");
   }
+}
+
+scope.onmessage = (event) => {
+  void handleMessage(event);
 };

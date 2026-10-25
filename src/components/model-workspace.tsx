@@ -52,7 +52,7 @@ async function referencedAssetNames(assetName: string, assetBuffer: ArrayBuffer,
       references = [...(json.buffers ?? []), ...(json.images ?? [])].flatMap((item) => item.uri ? [item.uri] : []);
     } catch { /* The loader reports malformed model JSON with the existing model error. */ }
   } else if (kind === "obj") {
-    references = [...assetText.matchAll(/^\s*mtllib\s+(.+)$/gim)].map((match) => match[1].trim());
+    references = [...assetText.matchAll(/^[ \t]*mtllib[ \t]+([^\r\n]+)$/gim)].map((match) => match[1].trim());
   }
   for (const reference of references) {
     const resolved = resolveScanAssetPath(reference, assetName, names);
@@ -467,11 +467,10 @@ export function ModelWorkspace() {
     }
   }
 
-  function exitImmersive() {
+  async function exitImmersive() {
     if (document.fullscreenElement && document.exitFullscreen) {
       try {
-        void document.exitFullscreen().then(() => setImmersiveMode(null), () => setImmersiveMode(null));
-        return;
+        await document.exitFullscreen();
       } catch { /* The fallback layout still exits below. */ }
     }
     setImmersiveMode(null);
@@ -878,7 +877,7 @@ export function ModelWorkspace() {
           parsedGroup = getModelRoot(gltf.scene);
         } else if (asset.kind === "obj") {
           const objText = new TextDecoder().decode(asset.buffer);
-          const materialReference = [...objText.matchAll(/^\s*mtllib\s+(.+)$/gim)].map((match) => match[1].trim())[0];
+          const materialReference = [...objText.matchAll(/^[ \t]*mtllib[ \t]+([^\r\n]+)$/gim)].map((match) => match[1].trim())[0];
           const materialName = materialReference ? resolveScanAssetPath(materialReference, asset.name, asset.files.map((item) => normalizeModelAssetPath(item.name))) : undefined;
           const materialFile = materialName ? asset.files.find((item) => normalizeModelAssetPath(item.name) === materialName) : undefined;
           if (materialReference && !materialFile) throw new Error(t("threeMissingAsset"));
