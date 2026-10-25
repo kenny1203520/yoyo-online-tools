@@ -455,7 +455,7 @@ export function ModelWorkspace() {
   function enterImmersive() {
     const element = stageRef.current;
     if (!modelName || !element) return;
-    previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    previousFocusRef.current = fullscreenButtonRef.current ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null);
     previousBodyOverflowRef.current = document.body.style.overflow;
     setImmersiveSettingsOpen(false);
     const request = element.requestFullscreen;
@@ -469,9 +469,12 @@ export function ModelWorkspace() {
 
   function exitImmersive() {
     if (document.fullscreenElement && document.exitFullscreen) {
-      try { void document.exitFullscreen().catch(() => {}); } catch { /* The fallback layout still exits below. */ }
+      try {
+        void document.exitFullscreen().then(() => setImmersiveMode(null), () => setImmersiveMode(null));
+        return;
+      } catch { /* The fallback layout still exits below. */ }
     }
-    if (immersiveMode === "fallback") setImmersiveMode(null);
+    setImmersiveMode(null);
   }
 
   function rotateCurrentPhoto(delta: -90 | 90) {
@@ -504,7 +507,7 @@ export function ModelWorkspace() {
       else if (immersiveMode === "native") setImmersiveMode(null);
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && immersiveMode === "fallback") { event.preventDefault(); setImmersiveMode(null); return; }
+      if (event.key === "Escape") { event.preventDefault(); exitImmersive(); return; }
       if (event.key !== "Tab") return;
       const stage = stageRef.current;
       if (!stage) return;
@@ -941,8 +944,10 @@ export function ModelWorkspace() {
       const mouse = new THREE.Vector2(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1);
       clickRaycaster.current.setFromCamera(mouse, cameraRef.current);
       const hit = clickRaycaster.current.intersectObjects(modelRef.current.children, true).find((item) => item.face?.normal && item.face.normal.clone().transformDirection(item.object.matrixWorld).y > .55);
-      if (!hit) { setNotice(t("threePlacePersonNoSurface")); return; }
-      const position = hit.point.clone();
+      const floorHeight = new THREE.Box3().setFromObject(stageRootRef.current).min.y;
+      const floor = new THREE.Plane(new THREE.Vector3(0, 1, 0), -floorHeight);
+      const position = hit?.point.clone() ?? clickRaycaster.current.ray.intersectPlane(floor, new THREE.Vector3());
+      if (!position) { setNotice(t("threePlacePersonNoSurface")); return; }
       humanAnchorRef.current = stageRootRef.current.worldToLocal(position.clone());
       playerRef.current.copy(position); verticalVelocityRef.current = 0;
       if (humanRef.current) humanRef.current.position.copy(position);

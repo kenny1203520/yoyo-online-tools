@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
 
 .language-switcher { position:relative; flex-shrink:0; }
 .language-trigger { display:flex; align-items:center; justify-content:center; gap:5px; min-width:52px; min-height:44px; padding:10px; border:1px solid var(--line); border-radius:10px; color:var(--teal-dark); background:var(--panel); cursor:pointer; }
