@@ -40,6 +40,20 @@ async function unpackFiles(files: File[]): Promise<LoadedAsset[]> {
   })));
 }
 
+function objMaterialLibraries(objText: string) {
+  const references: string[] = [];
+  for (const rawLine of objText.split("\n")) {
+    const line = rawLine.endsWith("\r") ? rawLine.slice(0, -1) : rawLine;
+    const directive = line.trimStart();
+    if (directive.slice(0, 6).toLowerCase() !== "mtllib") continue;
+    const separator = directive[6];
+    if (separator !== " " && separator !== "\t") continue;
+    const reference = directive.slice(6).trim();
+    if (reference) references.push(reference);
+  }
+  return references;
+}
+
 async function referencedAssetNames(assetName: string, assetBuffer: ArrayBuffer, availableNames: Iterable<string>, readAsset: (name: string) => Promise<Uint8Array>) {
   const names = [...availableNames];
   const dependencies = new Set<string>();
@@ -52,7 +66,7 @@ async function referencedAssetNames(assetName: string, assetBuffer: ArrayBuffer,
       references = [...(json.buffers ?? []), ...(json.images ?? [])].flatMap((item) => item.uri ? [item.uri] : []);
     } catch { /* The loader reports malformed model JSON with the existing model error. */ }
   } else if (kind === "obj") {
-    references = [...assetText.matchAll(/^[ \t]*mtllib[ \t]+([^\r\n]+)$/gim)].map((match) => match[1].trim());
+    references = objMaterialLibraries(assetText);
   }
   for (const reference of references) {
     const resolved = resolveScanAssetPath(reference, assetName, names);
@@ -506,7 +520,7 @@ export function ModelWorkspace() {
       else if (immersiveMode === "native") setImmersiveMode(null);
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") { event.preventDefault(); exitImmersive(); return; }
+      if (event.key === "Escape") { event.preventDefault(); void exitImmersive(); return; }
       if (event.key !== "Tab") return;
       const stage = stageRef.current;
       if (!stage) return;
@@ -877,7 +891,7 @@ export function ModelWorkspace() {
           parsedGroup = getModelRoot(gltf.scene);
         } else if (asset.kind === "obj") {
           const objText = new TextDecoder().decode(asset.buffer);
-          const materialReference = [...objText.matchAll(/^[ \t]*mtllib[ \t]+([^\r\n]+)$/gim)].map((match) => match[1].trim())[0];
+          const materialReference = objMaterialLibraries(objText)[0];
           const materialName = materialReference ? resolveScanAssetPath(materialReference, asset.name, asset.files.map((item) => normalizeModelAssetPath(item.name))) : undefined;
           const materialFile = materialName ? asset.files.find((item) => normalizeModelAssetPath(item.name) === materialName) : undefined;
           if (materialReference && !materialFile) throw new Error(t("threeMissingAsset"));
