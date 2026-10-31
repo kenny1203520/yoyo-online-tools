@@ -25,6 +25,9 @@ jobs:
           config-file: .github/codeql/codeql-config.yml
       - name: Run local CodeQL CLI
         run: |
+          codeql_path="$(find "$RUNNER_TOOL_CACHE" -type f -name codeql -print -quit)"
+          test -n "$codeql_path"
+          export PATH="$(dirname "$codeql_path"):$PATH"
           command -v codeql
           npm run codeql
   validate:
