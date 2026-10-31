@@ -284,7 +284,7 @@ export function SpreadsheetWorkspace({ tool }: { tool: SpreadsheetTool }) {
       renderCell: ({ row }) => <span className="spreadsheet-row-number">{(page * PAGE_SIZE + row.__rowIndex + 1).toLocaleString(locale)}</span>,
     };
     return [rowNumber, ...activeSheet.headers.map((header, index): Column<SpreadsheetGridRow> => ({
-      key: `column_${index}`, name: header, width: 180, minWidth: 120, resizable: true, editable,
+      key: `column_${index}_${header}`, name: header, width: 180, minWidth: 120, resizable: true, editable,
       renderCell: ({ row }) => <div className="spreadsheet-cell-value" style={view === "layout" ? styleForCell(row.__cellStyles?.[index]) : undefined}>{displayedValue(row[`column_${index}`], locale)}</div>,
       renderEditCell: (props) => spreadsheetCellEditor({ ...props, label: cellEditorLabel }),
     }))];
