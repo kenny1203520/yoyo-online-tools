@@ -108,7 +108,7 @@ export function SpreadsheetWorkspace({ tool }: { tool: SpreadsheetTool }) {
   const [combinePreview, setCombinePreview] = useState<SpreadsheetCombinePreview | null>(null);
   const [reviewed, setReviewed] = useState(false);
   const [rowPosition, setRowPosition] = useState(1);
-  const [columnPosition, setColumnPosition] = useState(1);
+  const [columnPosition, setColumnPosition] = useState(2);
   const [moveToPosition, setMoveToPosition] = useState(1);
   const [columnNameDraft, setColumnNameDraft] = useState<{ key: string; value: string } | null>(null);
   const [refreshRows, setRefreshRows] = useState(0);
@@ -228,6 +228,8 @@ export function SpreadsheetWorkspace({ tool }: { tool: SpreadsheetTool }) {
       if (response.type !== "loaded") throw new Error("unexpected response");
       setDocuments(response.documents);
       setActiveDocumentId(response.documents[0]?.id ?? "");
+      setColumnPosition(Math.min(2, Math.max(1, response.documents[0]?.sheets[0]?.columnCount ?? 1)));
+      setMoveToPosition(1);
       setPage(0); setView("data"); setRefreshRows((value) => value + 1);
       setLeftDocumentId(response.documents[0]?.id ?? "");
       setRightDocumentId(response.documents[1]?.id ?? response.documents[0]?.id ?? "");
