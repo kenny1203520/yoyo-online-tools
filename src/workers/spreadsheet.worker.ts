@@ -12,6 +12,7 @@ function send(message: SpreadsheetWorkerResponse) {
 }
 
 scope.onmessage = async (event) => {
+  if (event.origin !== self.location.origin) return;
   const request = event.data;
   try {
     switch (request.type) {

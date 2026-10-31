@@ -652,7 +652,7 @@ export class SpreadsheetEngine {
     if (!header) throw new SpreadsheetEngineError("headerRequired", "This table does not have a header row.");
     const before = header[column];
     if (before === name) return summary(document);
-    header[column] = name;
+    header.splice(column, 1, name);
     document.version++;
     document.modified = true;
     if (document.isResult) document.resultConfirmed = false;

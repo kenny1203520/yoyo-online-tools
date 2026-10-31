@@ -25,6 +25,7 @@ self.addEventListener("activate", (event) => event.waitUntil((async () => {
   await self.clients.claim();
 })()));
 self.addEventListener("message", (event) => {
+  if (event.origin !== self.location.origin) return;
   const source = event.source;
   if (!source || !("url" in source) || new URL(source.url).origin !== self.location.origin) return;
   if (event.data?.type === "ACTIVATE_UPDATE") { event.waitUntil(self.skipWaiting()); return; }
