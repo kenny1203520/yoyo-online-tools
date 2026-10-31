@@ -10,8 +10,9 @@ type ToolBase = {
   description: LocalizedText;
   searchTerms: LocalizedTerms;
   href: string;
-  category: "image" | "text" | "developer" | "3d";
+  category: "image" | "text" | "developer" | "3d" | "data";
   processing: "local";
+  featureFlag?: "spreadsheetWorkbench";
 };
 
 export type ImageTool = ToolBase & {
@@ -44,9 +45,15 @@ export type ThreeTool = ToolBase & {
   icon: "box";
 };
 
-export type Tool = ImageTool | TextTool | DeveloperTool | ThreeTool;
+export type SpreadsheetTool = ToolBase & {
+  category: "data";
+  workspace: "spreadsheet";
+  icon: "table";
+};
 
-export const tools: Tool[] = [
+export type Tool = ImageTool | TextTool | DeveloperTool | ThreeTool | SpreadsheetTool;
+
+const allTools: Tool[] = [
   {
     slug: "image-compress", category: "image", workspace: "image", processing: "local",
     name: { "zh-TW": "圖片壓縮", en: "Image Compressor" }, shortName: { "zh-TW": "壓縮圖片", en: "Compress images" },
@@ -131,7 +138,18 @@ export const tools: Tool[] = [
     description: { "zh-TW": "本機預覽 3D 與 IFC 模型，以人體尺度漫遊及量測空間。", en: "Preview local 3D and IFC models, walk at human scale, and measure spaces." },
     searchTerms: { "zh-TW": ["3d 模型", "3d viewer", "ifc 檢視", "bim viewer", "模型預覽", "空間漫遊", "模型量測", "fbx viewer", "gltf viewer"], en: ["3d model viewer", "3d preview", "ifc viewer", "bim viewer", "walk through model", "scene scale", "fbx viewer", "gltf viewer"] }, href: "/tools/3d-viewer",
   },
+  {
+    slug: "spreadsheet-workbench", category: "data", workspace: "spreadsheet", processing: "local", icon: "table",
+    featureFlag: "spreadsheetWorkbench",
+    name: { "zh-TW": "CSV／Excel 表格工作台", en: "CSV and Excel Workbench" },
+    shortName: { "zh-TW": "表格工作台", en: "Table workbench" },
+    description: { "zh-TW": "在瀏覽器整理、編輯及比對 CSV 與 Excel 表格。", en: "Clean, edit and compare CSV and Excel tables in your browser." },
+    searchTerms: { "zh-TW": ["excel", "試算表", "表格整理", "csv 去重", "excel 去重", "名單整理", "合併表格", "比對表格", "整理報表"], en: ["spreadsheet", "excel", "csv", "clean spreadsheet", "deduplicate spreadsheet", "merge tables", "compare spreadsheets", "data cleanup", "table editor"] },
+    href: "/tools/spreadsheet-workbench",
+  },
 ];
+
+export const tools: Tool[] = allTools.filter((tool) => tool.featureFlag !== "spreadsheetWorkbench" || process.env.NEXT_PUBLIC_ENABLE_SPREADSHEET_WORKBENCH === "true");
 
 export function localized<T extends LocalizedText>(value: T, locale: Locale = defaultLocale) {
   return getLocalizedText(value, locale);
@@ -199,7 +217,7 @@ export function matchesTool(tool: Tool, query: string) {
 
   const searchableValues = [
     tool.slug,
-    ...(tool.category === "image" ? ["圖片工具", "image tools", "photo tools"] : tool.category === "text" ? ["文字工具", "text tools", "writing tools"] : tool.category === "developer" ? ["工程師工具", "developer tools", "coding tools"] : ["3D 工具", "3d tools", "model viewer"]),
+    ...(tool.category === "image" ? ["圖片工具", "image tools", "photo tools"] : tool.category === "text" ? ["文字工具", "text tools", "writing tools"] : tool.category === "developer" ? ["工程師工具", "developer tools", "coding tools"] : tool.category === "data" ? ["表格工具", "data tools", "spreadsheet tools"] : ["3D 工具", "3d tools", "model viewer"]),
     tool.category,
     ...Object.values(tool.name),
     ...Object.values(tool.shortName),

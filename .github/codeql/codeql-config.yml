@@ -1,0 +1,13 @@
+name: yoyo-online-tools CodeQL config
+
+queries:
+  - uses: security-extended
+
+paths-ignore:
+  - .next/**
+  - out/**
+  - coverage/**
+  - public/wasm/**
+  - test-results/**
+  - playwright-report/**
+  - tests/fixtures/models/**

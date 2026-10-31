@@ -2,6 +2,9 @@ import { test, expect, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import JSZip from "jszip";
 
+const expectedToolCount = process.env.NEXT_PUBLIC_ENABLE_SPREADSHEET_WORKBENCH === "true" ? 14 : 13;
+const expectedSitemapEntries = process.env.NEXT_PUBLIC_ENABLE_SPREADSHEET_WORKBENCH === "true" ? 30 : 28;
+
 function makeTriangleGlb() {
   const positions = Buffer.alloc(36);
   [-1, 0, 0, 1, 0, 0, 0, 1, 0].forEach((value, index) => positions.writeFloatLE(value, index * 4));
@@ -61,7 +64,7 @@ test("search works across languages and survives locale changes", async ({ page 
   await page.getByRole("searchbox").fill("nothing-matches-123");
   await expect(page.locator(".empty-search")).toBeVisible();
   await page.locator(".empty-search button").click();
-  await expect(page.locator(".tool-card")).toHaveCount(13);
+  await expect(page.locator(".tool-card")).toHaveCount(expectedToolCount);
 });
 
 test("text, settings, results, errors and history survive locale navigation", async ({ page }) => {
@@ -140,7 +143,7 @@ test("images, overrides, results, ZIP and stale-result protection", async ({ pag
 test("sitemap and robots list localized live tools", async ({ request }) => {
   const sitemap = await request.get("/sitemap.xml");
   const xml = await sitemap.text();
-  expect((xml.match(/<loc>/g) || []).length).toBe(28);
+  expect((xml.match(/<loc>/g) || []).length).toBe(expectedSitemapEntries);
   expect(xml).toContain('hreflang="en"');
   expect(xml).not.toContain("/api/");
   expect(await (await request.get("/robots.txt")).text()).toContain("https://tools.example.test/sitemap.xml");
