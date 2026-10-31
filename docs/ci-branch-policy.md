@@ -17,12 +17,16 @@ The required checks are:
 - `Validate and publish / validate`
 - `Validate and publish / container (amd64)`
 - `Validate and publish / container (arm64)`
-- `Validate and publish / CodeQL`
+- `CodeQL / Analyze`
 
 The `validate` job runs lint, type checking, unit tests, the production build,
 and the browser test suite. Both container architectures run the same smoke
 test. The local and GitHub CodeQL jobs use the same
 `.github/codeql/codeql-config.yml`.
+
+The repository CodeQL default setup is disabled so the advanced workflow is
+the single hosted CodeQL authority; enabling both modes causes GitHub to reject
+the uploaded SARIF results.
 
 ## Pull requests and protection
 
