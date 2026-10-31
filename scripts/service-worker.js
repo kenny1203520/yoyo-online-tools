@@ -1,7 +1,7 @@
 /* Generated with a unique Next build ID. Only application resources are cached. */
 const CACHE = "yoyo-app-__BUILD_VERSION__";
 const FALLBACK = "/offline.html";
-const TOOL = /^(image-compress|image-resize|image-convert|text-cleanup|remove-duplicate-lines|word-count|json-formatter|text-diff|base64|url-encode-decode|unix-timestamp|regex-tester)$/;
+const TOOL = /^(image-compress|image-resize|image-convert|text-cleanup|remove-duplicate-lines|word-count|json-formatter|text-diff|base64|url-encode-decode|unix-timestamp|regex-tester|spreadsheet-workbench)$/;
 function eligiblePage(path) {
   const parts = path.split("/").filter(Boolean);
   return ["zh-TW", "en"].includes(parts[0]) && (parts.length === 1 || (parts.length === 3 && parts[1] === "tools" && TOOL.test(parts[2])));
@@ -25,6 +25,9 @@ self.addEventListener("activate", (event) => event.waitUntil((async () => {
   await self.clients.claim();
 })()));
 self.addEventListener("message", (event) => {
+  if (event.origin && event.origin !== self.location.origin) return;
+  const source = event.source;
+  if (!source || !("url" in source) || new URL(source.url).origin !== self.location.origin) return;
   if (event.data?.type === "ACTIVATE_UPDATE") { event.waitUntil(self.skipWaiting()); return; }
   if (event.data?.type !== "PREPARE_ROUTE") return;
   event.waitUntil((async () => {

@@ -59,6 +59,7 @@ docker run --rm -p 3000:3000 --env-file .env yoyo:local
 ```bash
 npm run dev       # 啟動開發伺服器
 npm run lint      # ESLint
+npm run codeql    # Local CodeQL analysis; see docs/codeql.md
 npm run typecheck # TypeScript
 npm test          # 翻譯、搜尋、設定與 SEO 行為測試
 npm run build     # 建置正式版本

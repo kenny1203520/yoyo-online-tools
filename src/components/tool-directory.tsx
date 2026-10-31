@@ -4,7 +4,7 @@ import { useI18n } from "@/lib/use-i18n";
 
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
-import { AlignLeft, ArrowDownToLine, ArrowUpRight, Binary, Box, Braces, CaseSensitive, Clock3, Code2, Crop, GitCompareArrows, Images, Link2, ListFilter, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { AlignLeft, ArrowDownToLine, ArrowUpRight, Binary, Box, Braces, CaseSensitive, Clock3, Code2, Crop, GitCompareArrows, Images, Link2, ListFilter, Search, ShieldCheck, Sparkles, Table2 } from "lucide-react";
 import { searchTools, tools, type Tool } from "@/lib/tools";
 
 type CategoryFilter = "all" | Tool["category"];
@@ -23,6 +23,7 @@ function toolIcon(tool: Tool) {
   if (tool.icon === "link") return Link2;
   if (tool.icon === "clock") return Clock3;
   if (tool.icon === "regex") return Braces;
+  if (tool.icon === "table") return Table2;
   if (tool.icon === "box") return Box;
   return CaseSensitive;
 }
@@ -35,6 +36,7 @@ export function ToolDirectory() {
   { id: "text", label: t("text"), englishLabel: "Text" },
   { id: "developer", label: t("developerTools"), englishLabel: "Developer" },
   { id: "3d", label: t("3dTools"), englishLabel: "3D" },
+  ...(tools.some((tool) => tool.category === "data") ? [{ id: "data" as const, label: t("spreadsheetTools"), englishLabel: "Data" }] : []),
 ];
 
   const { query, setQuery, category, setCategory } = useDirectoryState();

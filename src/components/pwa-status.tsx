@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/use-i18n";
-import { createDeveloperWorker, createTextWorker } from "@/lib/tool-workers";
+import { createDeveloperWorker, createSpreadsheetWorker, createTextWorker } from "@/lib/tool-workers";
 
 type InstallEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
 export function PwaStatus() {
@@ -54,12 +54,14 @@ export function PwaStatus() {
         if (!navigator.serviceWorker.controller) await new Promise<void>((resolve) => navigator.serviceWorker.addEventListener("controllerchange", () => resolve(), { once: true }));
         if (/\/image-(compress|resize|convert)$/.test(pathname)) await import("jszip");
         // Load the actual lazy worker module before promising offline processing.
-        if (/\/(json-formatter|text-diff|regex-tester|text-cleanup|remove-duplicate-lines|word-count)$/.test(pathname)) {
-          warmWorker = /\/(text-cleanup|remove-duplicate-lines|word-count)$/.test(pathname) ? createTextWorker() : createDeveloperWorker();
+        if (/\/(json-formatter|text-diff|regex-tester|text-cleanup|remove-duplicate-lines|word-count|spreadsheet-workbench)$/.test(pathname)) {
+          const spreadsheet = pathname.endsWith("/spreadsheet-workbench");
+          warmWorker = spreadsheet ? createSpreadsheetWorker() : /\/(text-cleanup|remove-duplicate-lines|word-count)$/.test(pathname) ? createTextWorker() : createDeveloperWorker();
           await new Promise<void>((resolve, reject) => {
             const timeout = window.setTimeout(() => reject(new Error("Worker preparation timed out")), 15000);
             warmWorker!.onmessage = () => { window.clearTimeout(timeout); resolve(); };
             warmWorker!.onerror = () => { window.clearTimeout(timeout); reject(new Error("Worker unavailable")); };
+            if (spreadsheet) warmWorker!.postMessage({ type: "warm", requestId: 1 });
           });
           warmWorker.terminate();
         }
