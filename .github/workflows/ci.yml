@@ -18,6 +18,11 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: .nvmrc
+      - name: Install CodeQL CLI
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          languages: javascript-typescript,actions
+          config-file: .github/codeql/codeql-config.yml
       - name: Run local CodeQL CLI
         run: |
           command -v codeql
